@@ -543,9 +543,15 @@ body {
     </div>
   </div>
   <div class="header-actions">
+    <div class="save-indicator" id="last-edit-indicator" style="display:none;cursor:default;">
+      <span id="last-edit-text"></span>
+    </div>
+    <div class="save-indicator" id="user-badge" style="cursor:pointer;" onclick="promptUserName()" title="Clique para trocar seu nome">
+      <span id="user-badge-text">Você: —</span>
+    </div>
     <div class="save-indicator">
       <div class="save-dot" id="save-dot"></div>
-      <span id="save-status">Salvo</span>
+      <span id="save-status">Conectando…</span>
     </div>
   </div>
 </div>
@@ -759,7 +765,14 @@ body {
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+// ─── SUPABASE (backend compartilhado da equipe) ──────────────────
+const SUPABASE_URL = 'https://stkaavlumvqkfcjgjhch.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0a2Fhdmx1bXZxa2ZjamdqaGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzOTE5NjQsImV4cCI6MjA5ODk2Nzk2NH0.8cZwTp-FqtTAffiXs_m-i2pj2U2gO12_cxtMqFi_-G8';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const TABLE = 'pcm_nodes';
+
 // ─── DATA ───────────────────────────────────────────────────────
 const LEVELS = [
   {n:1, name:'Planta',         color:'#1a4f8a', bg:'#e8f0f8'},
@@ -777,51 +790,130 @@ LEVELS.forEach(l => { LC[l.n]=l.color; LB[l.n]=l.bg; });
 
 let tree = [];
 let selectedId = null;
-let nextId = 1;
 let exportFormat = 'sap';
 let searchTerm = '';
 let unsaved = false;
+let expandedMap = {};
+let modalOpenCount = 0;
+let pendingRemoteRefresh = false;
 
-const STORAGE_KEY = 'pcm_asset_tree_5010';
-
-// ─── STORAGE ─────────────────────────────────────────────────────
-function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({tree, nextId}));
-    setUnsaved(false);
-    showToast('Salvo automaticamente');
-  } catch(e) {}
-}
-
-function load() {
-  try {
-    const d = localStorage.getItem(STORAGE_KEY);
-    if (d) {
-      const p = JSON.parse(d);
-      tree = p.tree || [];
-      nextId = p.nextId || 1;
-      return true;
-    }
-  } catch(e) {}
-  return false;
-}
-
-function setUnsaved(val) {
-  unsaved = val;
-  const dot = document.getElementById('save-dot');
-  const st = document.getElementById('save-status');
-  if (val) {
-    dot.classList.add('unsaved');
-    st.textContent = 'Não salvo';
-  } else {
-    dot.classList.remove('unsaved');
-    st.textContent = 'Salvo';
+const USER_KEY = 'pcm_user_name';
+function getUserName() { return localStorage.getItem(USER_KEY) || ''; }
+function promptUserName() {
+  const cur = getUserName();
+  const val = prompt('Como você quer aparecer para o time (ex: Ewerton - PCM)?', cur);
+  if (val && val.trim()) {
+    localStorage.setItem(USER_KEY, val.trim());
+    document.getElementById('user-badge-text').textContent = 'Você: ' + val.trim();
   }
 }
 
+function setSyncStatus(state) {
+  const dot = document.getElementById('save-dot');
+  const st = document.getElementById('save-status');
+  if (state === 'ok') { dot.classList.remove('unsaved'); dot.style.background='#4caf50'; st.textContent='Sincronizado'; }
+  else if (state === 'syncing') { dot.classList.add('unsaved'); dot.style.background='#ff9800'; st.textContent='Sincronizando…'; }
+  else { dot.classList.add('unsaved'); dot.style.background='#c62828'; st.textContent='Offline / erro'; }
+}
+
+function showLastEdit(by, when) {
+  if (!by) return;
+  const el = document.getElementById('last-edit-indicator');
+  const txt = document.getElementById('last-edit-text');
+  const t = when ? new Date(when).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+  txt.textContent = 'Última edição: ' + by + (t ? ' às '+t : '');
+  el.style.display = 'flex';
+}
+
+// Converte linhas planas do banco em árvore aninhada (mesmo formato usado no resto do app)
+function rowsToTree(rows) {
+  const byId = {};
+  rows.forEach(r => {
+    byId[r.id] = {
+      id: r.id, code: r.code, name: r.name, level: r.level, parentId: r.parent_id,
+      obs: r.obs || '', expanded: expandedMap.hasOwnProperty(r.id) ? expandedMap[r.id] : true,
+      updated_by: r.updated_by || '', updated_at: r.updated_at,
+      children: []
+    };
+  });
+  const roots = [];
+  rows.forEach(r => {
+    const node = byId[r.id];
+    if (r.parent_id && byId[r.parent_id]) byId[r.parent_id].children.push(node);
+    else roots.push(node);
+  });
+  return roots;
+}
+
+async function fetchTreeFromDB() {
+  const { data, error } = await sb.from(TABLE).select('*').order('parent_id', {ascending:true, nullsFirst:true}).order('id', {ascending:true});
+  if (error) { setSyncStatus('error'); console.error(error); return null; }
+  return data;
+}
+
+async function load() {
+  setSyncStatus('syncing');
+  const rows = await fetchTreeFromDB();
+  if (rows === null) return false;
+  tree = rowsToTree(rows);
+  setSyncStatus('ok');
+  const last = rows.slice().sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+  if (last) showLastEdit(last.updated_by, last.updated_at);
+  return rows.length > 0;
+}
+
+function snapshotExpanded(nodes=tree) {
+  nodes.forEach(n => { expandedMap[n.id]=n.expanded; snapshotExpanded(n.children); });
+}
+
+async function refreshFromRemote(byWho, when) {
+  if (modalOpenCount > 0) { pendingRemoteRefresh = true; return; }
+  snapshotExpanded();
+  const rows = await fetchTreeFromDB();
+  if (rows === null) return;
+  tree = rowsToTree(rows);
+  renderAll();
+  const n = selectedId ? findNode(selectedId) : null;
+  renderNodePanel(n);
+  if (byWho) { showLastEdit(byWho, when); showToast('Atualizado por ' + byWho); }
+  setSyncStatus('ok');
+}
+
+function setUnsaved(val) {
+  unsaved = val; // status real de sincronização é tratado por setSyncStatus()
+}
+
 // ─── UTILS ────────────────────────────────────────────────────────
+let tempIdCounter = -1; // ids negativos provisórios, usados só até persistir no Supabase
 function makeNode(code, name, level, parentId=null, obs='') {
-  return {id:nextId++, code:code.toUpperCase(), name, level, parentId, obs, expanded:true, children:[]};
+  return {id:tempIdCounter--, code:code.toUpperCase(), name, level, parentId, obs, expanded:true, children:[]};
+}
+
+async function insertNodeDB(code, name, level, parentId, obs) {
+  const who = getUserName() || 'Anônimo';
+  const { data, error } = await sb.from(TABLE).insert({
+    code: code.toUpperCase(), name, level, parent_id: parentId, obs, updated_by: who
+  }).select().single();
+  if (error) { setSyncStatus('error'); alert('Erro ao salvar no banco: ' + error.message); return null; }
+  setSyncStatus('ok');
+  showLastEdit(who, data.updated_at);
+  return data;
+}
+
+async function updateNodeDB(id, fields) {
+  const who = getUserName() || 'Anônimo';
+  const { data, error } = await sb.from(TABLE).update({...fields, updated_by: who}).eq('id', id).select().single();
+  if (error) { setSyncStatus('error'); alert('Erro ao salvar no banco: ' + error.message); return null; }
+  setSyncStatus('ok');
+  showLastEdit(who, data.updated_at);
+  return data;
+}
+
+async function deleteNodeDB(id) {
+  const { error } = await sb.from(TABLE).delete().eq('id', id);
+  if (error) { setSyncStatus('error'); alert('Erro ao excluir no banco: ' + error.message); return false; }
+  setSyncStatus('ok');
+  return true;
 }
 
 function findNode(id, nodes=tree) {
@@ -1008,6 +1100,7 @@ function renderNodePanel(n) {
     <div class="node-detail-label">Filhos</div>
     <div class="node-detail-value">${n.children.length} item(ns)</div>
     ${n.obs ? `<div class="node-detail-label">Observação</div><div class="node-detail-value">${n.obs}</div>` : ''}
+    ${n.updated_by ? `<div class="node-detail-label">Última edição</div><div class="node-detail-value">${n.updated_by}${n.updated_at ? ' — ' + new Date(n.updated_at).toLocaleString('pt-BR') : ''}</div>` : ''}
   `;
 }
 
@@ -1030,22 +1123,25 @@ function openAddModal(parentId) {
   setTimeout(()=>document.getElementById('add-code').focus(),100);
 }
 
-function confirmAdd() {
+async function confirmAdd() {
   const code = document.getElementById('add-code').value.trim();
   const name = document.getElementById('add-name').value.trim();
   const level = parseInt(document.getElementById('add-level').value);
   const obs = document.getElementById('add-obs').value.trim();
   if (!code || !name) { alert('Preencha o código e a descrição.'); return; }
-  const node = makeNode(code, name, level, addParentId, obs);
+  setSyncStatus('syncing');
+  const row = await insertNodeDB(code, name, level, addParentId, obs);
+  closeModal('modal-add');
+  if (!row) return;
+  const node = {id:row.id, code:row.code, name:row.name, level:row.level, parentId:row.parent_id, obs:row.obs||'', expanded:true, children:[]};
   if (addParentId) {
     const parent = findNode(addParentId);
     if (parent) { parent.children.push(node); parent.expanded=true; }
   } else {
     tree.push(node);
   }
-  closeModal('modal-add');
   selectNode(node.id);
-  save();
+  showToast('Adicionado e sincronizado');
 }
 
 function openEditModal() {
@@ -1061,33 +1157,40 @@ function openEditModal() {
   setTimeout(()=>document.getElementById('edit-name').focus(),100);
 }
 
-function confirmEdit() {
+async function confirmEdit() {
   const n = findNode(selectedId);
   if (!n) return;
-  n.code = document.getElementById('edit-code').value.trim().toUpperCase();
-  n.name = document.getElementById('edit-name').value.trim();
-  n.level = parseInt(document.getElementById('edit-level').value);
-  n.obs = document.getElementById('edit-obs').value.trim();
+  const code = document.getElementById('edit-code').value.trim().toUpperCase();
+  const name = document.getElementById('edit-name').value.trim();
+  const level = parseInt(document.getElementById('edit-level').value);
+  const obs = document.getElementById('edit-obs').value.trim();
+  setSyncStatus('syncing');
+  const row = await updateNodeDB(n.id, {code, name, level, obs});
   closeModal('modal-edit');
+  if (!row) return;
+  n.code = row.code; n.name = row.name; n.level = row.level; n.obs = row.obs||'';
   renderAll();
   renderNodePanel(n);
-  save();
+  showToast('Salvo e sincronizado');
 }
 
-function deleteSelected() {
+async function deleteSelected() {
   if (!selectedId) return;
   const n = findNode(selectedId);
   if (!n) return;
   const msg = n.children.length>0
-    ? `Excluir "${n.name}" e seus ${n.children.length} filho(s)? Isso removerá toda a subárvore.`
-    : `Excluir "${n.name}"?`;
+    ? `Excluir "${n.name}" e seus ${n.children.length} filho(s)? Isso removerá toda a subárvore para todo o time.`
+    : `Excluir "${n.name}" para todo o time?`;
   if (!confirm(msg)) return;
+  setSyncStatus('syncing');
+  const ok = await deleteNodeDB(selectedId); // cascade no banco remove os filhos também
+  if (!ok) return;
   deleteNode(selectedId);
   selectedId = null;
   ['btn-add-child','btn-edit','btn-del'].forEach(b => document.getElementById(b).disabled=true);
   document.getElementById('node-panel').innerHTML='<div class="node-panel-empty">Selecione um nó<br>para ver detalhes</div>';
   renderAll();
-  save();
+  showToast('Excluído e sincronizado');
 }
 
 // ─── EXPAND / COLLAPSE ────────────────────────────────────────────
@@ -1169,7 +1272,7 @@ function copyExport() {
 
 // ─── JSON IMPORT/EXPORT ──────────────────────────────────────────
 function exportJSON() {
-  const data = JSON.stringify({tree, nextId}, null, 2);
+  const data = JSON.stringify({tree}, null, 2);
   const blob = new Blob([data], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1183,40 +1286,95 @@ function importFromJSON() {
   openModal('modal-import');
 }
 
-function confirmImport() {
+// Remove ids antigos (podem ser de outro banco/sessão) e gera ids temporários locais,
+// preservando a hierarquia via novos parentId provisórios.
+function stripIdsAssignTemp(nodes, parentTempId=null) {
+  return nodes.map(n => {
+    const tempId = tempIdCounter--;
+    const node = {id:tempId, code:n.code, name:n.name, level:n.level, parentId:parentTempId, obs:n.obs||'', expanded:true, children:[]};
+    node.children = stripIdsAssignTemp(n.children||[], tempId);
+    return node;
+  });
+}
+
+async function confirmImport() {
   try {
     const raw = document.getElementById('import-json').value.trim();
     const parsed = JSON.parse(raw);
-    if (parsed.tree && Array.isArray(parsed.tree)) {
-      tree = parsed.tree;
-      nextId = parsed.nextId || (countAll()+1);
-    } else if (Array.isArray(parsed)) {
-      tree = parsed;
-    } else {
-      throw new Error('Formato inválido');
-    }
+    let importedTree;
+    if (parsed.tree && Array.isArray(parsed.tree)) importedTree = parsed.tree;
+    else if (Array.isArray(parsed)) importedTree = parsed;
+    else throw new Error('Formato inválido');
+
+    tempIdCounter = -1;
+    const localTree = stripIdsAssignTemp(importedTree);
+
     closeModal('modal-import');
-    selectedId=null;
+    selectedId = null;
+    setSyncStatus('syncing');
+    showToast('Substituindo árvore do time — gravando…');
+    const ok = await clearAllDB();
+    if (!ok) return;
+    const idMap = await persistTreeToDB(localTree);
+    reindexIds(localTree, idMap);
+    tree = localTree;
     renderAll();
-    save();
-    showToast('Importado com sucesso!');
+    showToast('Importado e sincronizado com o time!');
   } catch(e) {
     alert('Erro ao importar: ' + e.message);
   }
 }
 
 // ─── CLEAR / RESET ────────────────────────────────────────────────
-function clearAll() {
-  if (!confirm('Apagar toda a árvore? Esta ação não pode ser desfeita.')) return;
-  tree=[];nextId=1;selectedId=null;
-  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
-  renderAll();
-  save();
+async function clearAllDB() {
+  const { error } = await sb.from(TABLE).delete().gte('id', 0);
+  if (error) { setSyncStatus('error'); alert('Erro ao limpar no banco: ' + error.message); return false; }
+  return true;
 }
 
-function resetToDefault() {
-  if (tree.length>0 && !confirm('Substituir a árvore atual pelo exemplo da Planta 5010?')) return;
-  tree=[]; nextId=1; selectedId=null;
+async function clearAll() {
+  if (!confirm('Apagar toda a árvore para TODO O TIME? Esta ação não pode ser desfeita.')) return;
+  setSyncStatus('syncing');
+  const ok = await clearAllDB();
+  if (!ok) return;
+  tree=[];selectedId=null;
+  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
+  renderAll();
+  showToast('Árvore apagada para todo o time');
+}
+
+// Insere uma sub-árvore local (client-side, com ids provisórios) no banco,
+// respeitando a ordem pai→filho, e devolve a árvore já com ids reais do Supabase.
+async function persistTreeToDB(localTree) {
+  const idMap = {};
+  async function walk(nodes, parentRealId) {
+    for (const n of nodes) {
+      const row = await insertNodeDB(n.code, n.name, n.level, parentRealId, n.obs||'');
+      if (!row) throw new Error('Falha ao inserir ' + n.code);
+      idMap[n.id] = row.id;
+      n.realId = row.id;
+      if (n.children && n.children.length) await walk(n.children, row.id);
+    }
+  }
+  await walk(localTree, null);
+  return idMap;
+}
+
+function reindexIds(nodes, idMap) {
+  nodes.forEach(n => {
+    n.id = idMap[n.id] ?? n.id;
+    n.parentId = n.parentId!=null ? (idMap[n.parentId] ?? n.parentId) : null;
+    reindexIds(n.children, idMap);
+  });
+}
+
+async function resetToDefault() {
+  if (tree.length>0 && !confirm('Substituir a árvore atual (de TODO O TIME) pelo exemplo da Planta 5010?')) return;
+  setSyncStatus('syncing');
+  const ok = await clearAllDB();
+  if (!ok) return;
+  tree=[]; selectedId=null;
+  tempIdCounter = -1;
 
   const pl = makeNode('PL5010','O-I RIO DE JANEIRO GC',1);
   tree.push(pl);
@@ -1283,13 +1441,24 @@ function resetToDefault() {
 
   ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
   renderAll();
-  save();
-  showToast('Estrutura exemplo da Planta 5010 carregada!');
+  showToast('Gravando exemplo no banco compartilhado…');
+  try {
+    const idMap = await persistTreeToDB(tree);
+    reindexIds(tree, idMap);
+    renderAll();
+    showToast('Estrutura exemplo da Planta 5010 sincronizada com o time!');
+  } catch(e) {
+    alert('Erro ao gravar a estrutura exemplo: ' + e.message);
+  }
 }
 
 // ─── MODAL HELPERS ────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); modalOpenCount++; }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  modalOpenCount = Math.max(0, modalOpenCount-1);
+  if (modalOpenCount===0 && pendingRemoteRefresh) { pendingRemoteRefresh=false; refreshFromRemote(); }
+}
 
 // Close on backdrop click
 document.querySelectorAll('.modal-overlay').forEach(mo=>{
@@ -1336,13 +1505,33 @@ function scheduleSave() {
   autoSaveTimer=setTimeout(save, 1500);
 }
 
+// ─── REALTIME (todo o time vê as mudanças uns dos outros) ─────────
+function setupRealtime() {
+  sb.channel('pcm_nodes_changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:TABLE}, (payload) => {
+      const rec = payload.new && Object.keys(payload.new).length ? payload.new : payload.old;
+      const who = rec && rec.updated_by;
+      const when = rec && rec.updated_at;
+      refreshFromRemote(who, when);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') setSyncStatus('ok');
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setSyncStatus('error');
+    });
+}
+
 // ─── INIT ────────────────────────────────────────────────────────
 buildLegend();
-const loaded = load();
-if (!loaded || tree.length===0) {
-  // show empty state
-}
-renderAll();
+document.getElementById('user-badge-text').textContent = 'Você: ' + (getUserName() || '(clique p/ definir)');
+(async () => {
+  await load();
+  if (tree.length===0) {
+    // mostra estado vazio; pode carregar o exemplo pela barra lateral
+  }
+  renderAll();
+  setupRealtime();
+  if (!getUserName()) setTimeout(promptUserName, 400);
+})();
 
 // Tip: press Enter to confirm modals
 ['modal-add','modal-edit'].forEach(mid=>{
