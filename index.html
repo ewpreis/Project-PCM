@@ -3,1042 +3,1710 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Árvore de Ativos PCM – O-I 5010</title>
+<title>Árvore de Ativos – PCM | O-I Rio de Janeiro</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
 :root {
-  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--border:#d8d6ce;--border-strong:#b0ada0;
-  --text:#1a1917;--text-muted:#6b6860;--text-faint:#9b9890;
-  --accent:#1a4f8a;--accent-light:#e8f0f8;
-  --n1:#1a4f8a;--n1b:#e8f0f8;--n2:#127a52;--n2b:#e4f5ed;
-  --n3:#8a5a00;--n3b:#fdf0d8;--n4:#8a1a5a;--n4b:#f8e8f2;
-  --n5:#4a3a9a;--n5b:#eeecf8;--n6:#5a5a5a;--n6b:#f0f0f0;
-  --n7:#9a1a1a;--n7b:#f8e8e8;--n8:#2a6a1a;--n8b:#e8f5e4;
-  --green:#127a52;--red:#9a1a1a;--orange:#8a5a00;
-  --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #d8d6ce;
+  --border-strong: #b0ada0;
+  --text: #1a1917;
+  --text-muted: #6b6860;
+  --text-faint: #9b9890;
+  --accent: #1a4f8a;
+  --accent-light: #e8f0f8;
+
+  --n1: #1a4f8a; --n1-bg: #e8f0f8;
+  --n2: #127a52; --n2-bg: #e4f5ed;
+  --n3: #8a5a00; --n3-bg: #fdf0d8;
+  --n4: #8a1a5a; --n4-bg: #f8e8f2;
+  --n5: #4a3a9a; --n5-bg: #eeecf8;
+  --n6: #5a5a5a; --n6-bg: #f0f0f0;
+  --n7: #9a1a1a; --n7-bg: #f8e8e8;
+  --n8: #2a6a1a; --n8-bg: #e8f5e4;
+
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
 
 /* HEADER */
-.hdr{background:var(--text);color:#fff;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:50}
-.hdr-brand{display:flex;align-items:center;gap:10px}
-.hdr-logo{width:30px;height:30px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:500;color:#fff}
-.hdr-title{font-size:13px;font-weight:500}
-.hdr-sub{font-size:10px;color:rgba(255,255,255,.45);font-family:var(--mono)}
-.hdr-right{display:flex;align-items:center;gap:10px}
-.sync-badge{display:flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.5)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;transition:background .3s}
-.sync-dot.warn{background:#ff9800}
-.sync-dot.err{background:#f44336}
-.sync-dot.spin{background:#2196f3;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* SETUP BANNER */
-.setup-banner{background:linear-gradient(135deg,#1a4f8a,#0d3060);color:#fff;padding:24px 28px;margin:0;display:flex;flex-direction:column;gap:16px}
-.setup-banner h2{font-size:16px;font-weight:600}
-.setup-banner p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;max-width:640px}
-.setup-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-.setup-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:220px}
-.setup-field label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);font-family:var(--mono)}
-.setup-field input{padding:8px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-family:var(--mono);outline:none}
-.setup-field input::placeholder{color:rgba(255,255,255,.35)}
-.setup-field input:focus{border-color:rgba(255,255,255,.5)}
-.btn-connect{padding:8px 18px;border-radius:6px;border:none;background:#fff;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;height:36px;align-self:flex-end}
-.btn-connect:hover{background:#e8f0f8}
-.setup-note{font-size:11px;color:rgba(255,255,255,.45);font-family:var(--mono)}
+.header {
+  background: var(--text);
+  color: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-logo {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.header-title {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.header-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font-mono);
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-indicator {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.save-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+.save-dot.unsaved { background: #ff9800; }
 
 /* LAYOUT */
-.layout{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 52px)}
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 52px);
+}
 
 /* SIDEBAR */
-.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:52px;height:calc(100vh - 52px);overflow:hidden}
-.sb-sec{padding:14px 14px;border-bottom:1px solid var(--border)}
-.sb-sec h3{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;font-family:var(--mono)}
-.level-list{display:flex;flex-direction:column;gap:3px}
-.level-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:4px;cursor:pointer;transition:background .1s}
-.level-item:hover{background:var(--surface2)}
-.level-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.level-name{font-size:12px;flex:1}
-.level-n{font-family:var(--mono);font-size:10px;color:var(--text-faint)}
-.action-group{display:flex;flex-direction:column;gap:5px}
-.btn{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;width:100%;text-align:left}
-.btn:hover{background:var(--surface2);border-color:var(--border-strong)}
-.btn:disabled{opacity:.3;cursor:not-allowed}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.primary:hover{background:#143d6a}
-.btn.success{background:var(--green);color:#fff;border-color:var(--green)}
-.btn.success:hover{background:#0e5a3c}
-.btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
-.btn.danger:hover{background:#7a1010}
-.btn.warn{background:var(--orange);color:#fff;border-color:var(--orange)}
-.node-panel{flex:1;overflow-y:auto;padding:14px}
-.np-empty{text-align:center;color:var(--text-faint);font-size:12px;padding:20px 0;line-height:1.7}
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+}
+.sidebar-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-section h3 {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+}
+
+/* LEVEL LEGEND */
+.level-list { display: flex; flex-direction: column; gap: 4px; }
+.level-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.level-item:hover { background: var(--surface2); }
+.level-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.level-name { font-size: 12px; color: var(--text); flex: 1; }
+.level-n { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); }
+
+/* NODE PANEL */
+.node-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.node-panel-empty {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 24px 0;
+  line-height: 1.7;
+}
+.node-detail-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.node-detail-value {
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  background: var(--surface2);
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  word-break: break-all;
+}
+.node-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ACTION BUTTONS */
+.action-group { display: flex; flex-direction: column; gap: 6px; }
+.btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+  text-align: left;
+}
+.btn:hover { background: var(--surface2); border-color: var(--border-strong); }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.btn-primary:hover { background: #143d6a; }
+.btn.btn-danger { background: #9a1a1a; color: #fff; border-color: #9a1a1a; }
+.btn.btn-danger:hover { background: #7a1010; }
+.btn.btn-success { background: #127a52; color: #fff; border-color: #127a52; }
+.btn.btn-success:hover { background: #0e5a3c; }
+.btn-icon { font-size: 14px; flex-shrink: 0; }
 
 /* MAIN */
-.main{display:flex;flex-direction:column;overflow:hidden}
-.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.tbtn{padding:5px 11px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s}
-.tbtn:hover{background:var(--surface2)}
-.tbtn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
-.t-sep{width:1px;height:20px;background:var(--border);margin:0 3px}
-.tsearch{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 9px}
-.tsearch input{border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text);outline:none;width:150px}
-.tsearch input::placeholder{color:var(--text-faint)}
-.tree-wrap{flex:1;overflow-y:auto;padding:14px 16px}
-.tree-empty{text-align:center;color:var(--text-faint);font-size:13px;padding:50px 20px;line-height:1.8}
-.tree-empty span{display:block;font-size:28px;margin-bottom:10px}
+.main { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+/* TOOLBAR */
+.toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.toolbar-btn {
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.toolbar-btn:hover { background: var(--surface2); }
+.toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.toolbar-search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px;
+}
+.toolbar-search input {
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  width: 160px;
+}
+.toolbar-search input::placeholder { color: var(--text-faint); }
+
+/* TREE */
+.tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+.tree-empty {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 13px;
+  padding: 60px 20px;
+  line-height: 1.8;
+}
+.tree-empty span { display: block; font-size: 32px; margin-bottom: 12px; }
 
 /* NODES */
-.node-row{display:flex;align-items:center;border-radius:5px;cursor:pointer;margin-bottom:1px;transition:background .1s}
-.node-row:hover{background:var(--surface2)}
-.node-row.sel{background:var(--accent-light)}
-.node-row.hit{background:#fffbea}
-.node-row.drag-over-child{background:#e4f5ed;outline:2px solid #127a52;outline-offset:-2px}
-.node-row.drag-over-before{border-top:2px solid var(--accent)}
-.node-row.drag-over-after{border-bottom:2px solid var(--accent)}
-.node-row.dragging{opacity:.35}
-.drag-handle{font-size:14px;color:var(--text-faint);cursor:grab;padding:0 3px 0 6px;flex-shrink:0;user-select:none}
-.drag-handle:hover{color:var(--accent)}
-.indent-seg{width:20px;flex-shrink:0;position:relative}
-.indent-seg::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:1px;background:var(--border)}
-.indent-seg.last::after{content:'';position:absolute;left:9px;top:50%;width:8px;height:1px;background:var(--border)}
-.toggle-zone{width:18px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tog{width:13px;height:13px;border-radius:3px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-muted);cursor:pointer;font-family:var(--mono)}
-.tog:hover{border-color:var(--border-strong);background:var(--surface2)}
-.ndot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin:0 6px}
-.nlabel{flex:1;display:flex;align-items:center;gap:7px;padding:4px 0;min-width:0}
-.nname{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ncode{font-family:var(--mono);font-size:10px;color:var(--text-faint);white-space:nowrap;flex-shrink:0}
-.nbadge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;font-family:var(--mono);flex-shrink:0}
-.ncnt{font-size:10px;color:var(--text-faint);font-family:var(--mono);margin-right:7px;flex-shrink:0}
-.children-wrap{margin-left:0}
+.node-wrap { }
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 6px;
+  transition: background 0.1s;
+  cursor: pointer;
+  margin-bottom: 1px;
+  position: relative;
+}
+.node-row:hover { background: var(--surface2); }
+.node-row.selected { background: var(--accent-light); }
+.node-row.search-match { background: #fffbea; }
 
-/* STATS */
-.stats{background:var(--surface);border-top:1px solid var(--border);padding:5px 16px;display:flex;gap:18px;align-items:center}
-.stat{display:flex;align-items:center;gap:4px;font-size:11px;font-family:var(--mono);color:var(--text-faint)}
-.stat b{color:var(--text-muted);font-weight:500}
+/* DRAG & DROP */
+.node-row.drag-over-child { background: #e4f5ed !important; outline: 2px solid #127a52; outline-offset: -2px; }
+.node-row.drag-over-before { border-top: 2px solid var(--accent) !important; }
+.node-row.drag-over-after  { border-bottom: 2px solid var(--accent) !important; }
+.node-row.dragging { opacity: 0.35; }
+.drag-handle {
+  font-size: 14px; color: var(--text-faint); cursor: grab;
+  padding: 0 4px 0 6px; flex-shrink: 0; user-select: none; line-height: 1;
+}
+.drag-handle:hover { color: var(--accent); }
+
+
+.node-indent {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+.indent-seg {
+  width: 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+.indent-seg::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+.indent-seg.last::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: var(--border);
+}
+
+.toggle-zone {
+  width: 20px; height: 32px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.toggle-btn2 {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.1s;
+  font-family: var(--font-mono);
+}
+.toggle-btn2:hover { border-color: var(--border-strong); background: var(--surface2); }
+
+.node-dot2 {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin: 0 7px;
+}
+.node-label-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  min-width: 0;
+}
+.node-name {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.node-code2 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.node-nbadge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.node-children-count {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.children-wrap {
+  margin-left: 0;
+}
 
 /* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(26,25,23,.5);z-index:200;align-items:center;justify-content:center}
-.modal-bg.open{display:flex}
-.modal{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:22px;width:420px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
-.modal h3{font-size:15px;font-weight:600;margin-bottom:3px}
-.modal-sub{font-size:11px;color:var(--text-muted);margin-bottom:18px;font-family:var(--mono)}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
-.field input,.field select,.field textarea{width:100%;padding:7px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
-.field textarea{resize:vertical;min-height:55px}
-.modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
-.modal-actions .btn{width:auto}
-.export-area{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;font-family:var(--mono);font-size:11px;color:var(--text);max-height:260px;overflow-y:auto;white-space:pre;line-height:1.6}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,25,23,0.55);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  width: 420px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal-box h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.modal-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+}
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 5px;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--accent);
+}
+.field textarea { resize: vertical; min-height: 60px; }
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.modal-actions .btn { width: auto; }
 
-/* CONFLICT */
-.conflict-box{background:#fff8e8;border:1px solid #e0b84a;border-radius:7px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.6;color:#5a4000}
-.conflict-box strong{display:block;margin-bottom:5px;font-size:13px}
+/* EXPORT */
+.export-area {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  max-height: 280px;
+  overflow-y: auto;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+/* STATS BAR */
+.stats-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+}
+.stat-val { color: var(--text-muted); font-weight: 500; }
 
 /* TOAST */
-.toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:9px 16px;border-radius:7px;font-size:12px;font-family:var(--mono);z-index:1000;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
-.toast.ok{background:#127a52}
-.toast.err{background:#9a1a1a}
-.toast.warn{background:#8a5a00}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--text);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
 
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="hdr">
-  <div class="hdr-brand">
-    <div class="hdr-logo">PCM</div>
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">PCM</div>
     <div>
-      <div class="hdr-title">Árvore de Ativos</div>
-      <div class="hdr-sub">O-I RIO DE JANEIRO · PLANTA 5010</div>
+      <div class="header-title">Árvore de Ativos</div>
+      <div class="header-sub">O-I RIO DE JANEIRO · PLANTA 5010</div>
     </div>
   </div>
-  <div class="hdr-right">
-    <div class="sync-badge">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-status">Offline</span>
+  <div class="header-actions">
+    <div class="save-indicator" id="last-edit-indicator" style="display:none;cursor:default;">
+      <span id="last-edit-text"></span>
     </div>
-    <button class="tbtn" onclick="manualSync()" id="btn-sync" style="font-size:11px;padding:4px 10px">↺ Sincronizar</button>
+    <div class="save-indicator" id="user-badge" style="cursor:pointer;" onclick="promptUserName()" title="Clique para trocar seu nome">
+      <span id="user-badge-text">Você: —</span>
+    </div>
+    <div class="save-indicator">
+      <div class="save-dot" id="save-dot"></div>
+      <span id="save-status">Conectando…</span>
+    </div>
   </div>
 </div>
 
-<!-- SETUP BANNER -->
-<div class="setup-banner" id="setup-banner" style="display:none">
-  <div>
-    <h2>⚙ Configurar conexão com SharePoint via Power Automate</h2>
-    <p>Cole abaixo as URLs dos dois flows que você criou no Power Automate. Depois de salvo, a equipe toda usa o mesmo arquivo HTML e os dados ficam no SharePoint.</p>
-  </div>
-  <div class="setup-row">
-    <div class="setup-field">
-      <label>URL do Flow — CARREGAR (GET)</label>
-      <input id="cfg-get" placeholder="https://prod-XX.westus.logic.azure.com/workflows/..." autocomplete="off">
-    </div>
-    <div class="setup-field">
-      <label>URL do Flow — SALVAR (POST)</label>
-      <input id="cfg-post" placeholder="https://prod-XX.westus.logic.azure.com/workflows/..." autocomplete="off">
-    </div>
-    <button class="btn-connect" onclick="saveConfig()">Conectar</button>
-  </div>
-  <div class="setup-note">
-    As URLs ficam salvas no seu navegador (localStorage). Não são enviadas para nenhum servidor externo.
-    &nbsp;·&nbsp; <span style="cursor:pointer;text-decoration:underline;color:rgba(255,255,255,.6)" onclick="showFlowGuide()">Como criar os flows? →</span>
-  </div>
-</div>
-
-<div class="layout" id="main-layout">
+<div class="layout">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sb-sec">
-      <h3>Hierarquia — 8 Níveis</h3>
+    <div class="sidebar-section">
+      <h3>Hierarquia (8 Níveis)</h3>
       <div class="level-list" id="level-legend"></div>
     </div>
-    <div class="sb-sec">
+
+    <div class="sidebar-section">
       <h3>Ações</h3>
       <div class="action-group">
-        <button class="btn primary" onclick="openAdd(null)"><span>+</span> Adicionar Raiz</button>
-        <button class="btn" id="btn-add-child" onclick="openAdd(selId)" disabled><span>↳</span> Adicionar Filho</button>
-        <button class="btn" id="btn-edit" onclick="openEdit()" disabled><span>✎</span> Editar</button>
-        <button class="btn danger" id="btn-del" onclick="delSel()" disabled><span>✕</span> Excluir</button>
+        <button class="btn btn-primary" onclick="openAddModal(null)">
+          <span class="btn-icon">+</span> Adicionar Planta / Raiz
+        </button>
+        <button class="btn" id="btn-add-child" onclick="openAddModal(selectedId)" disabled>
+          <span class="btn-icon">↳</span> Adicionar Filho
+        </button>
+        <button class="btn" id="btn-edit" onclick="openEditModal()" disabled>
+          <span class="btn-icon">✎</span> Editar Selecionado
+        </button>
+        <button class="btn btn-danger" id="btn-del" onclick="deleteSelected()" disabled>
+          <span class="btn-icon">✕</span> Excluir Selecionado
+        </button>
       </div>
     </div>
-    <div class="sb-sec">
-      <h3>SharePoint</h3>
+
+    <div class="sidebar-section">
+      <h3>Exportar / Importar</h3>
       <div class="action-group">
-        <button class="btn success" onclick="pushToSP()"><span>↑</span> Salvar no SharePoint</button>
-        <button class="btn" onclick="pullFromSP()"><span>↓</span> Carregar do SharePoint</button>
-        <button class="btn warn" onclick="showConfig()"><span>⚙</span> Reconfigurar URLs</button>
+        <button class="btn btn-success" onclick="showExport()">
+          <span class="btn-icon">↓</span> Exportar (SAP / Excel)
+        </button>
+        <button class="btn" onclick="importFromJSON()">
+          <span class="btn-icon">↑</span> Importar JSON
+        </button>
+        <button class="btn" onclick="exportJSON()">
+          <span class="btn-icon">{ }</span> Salvar como JSON
+        </button>
       </div>
     </div>
-    <div class="sb-sec">
-      <h3>Exportar / Backup</h3>
-      <div class="action-group">
-        <button class="btn" onclick="showExport()"><span>↓</span> Exportar SAP / CSV</button>
-        <button class="btn" onclick="exportJSON()"><span>{ }</span> Baixar JSON</button>
-        <button class="btn" onclick="openImport()"><span>↑</span> Importar JSON</button>
-      </div>
-    </div>
-    <div class="sb-sec">
+
+    <div class="sidebar-section">
       <h3>Visualização</h3>
       <div class="action-group">
-        <button class="btn" onclick="expAll()">▼ Expandir tudo</button>
-        <button class="btn" onclick="colAll()">▶ Recolher tudo</button>
-        <button class="btn" onclick="expTo(3)">Até N3</button>
-        <button class="btn" onclick="expTo(5)">Até N5</button>
+        <button class="btn" onclick="expandAll()">▼ Expandir Tudo</button>
+        <button class="btn" onclick="collapseAll()">▶ Recolher Tudo</button>
+        <button class="btn" onclick="expandToLevel(3)">Mostrar até N3</button>
+        <button class="btn" onclick="expandToLevel(5)">Mostrar até N5</button>
       </div>
     </div>
-    <div class="sb-sec">
+
+    <div class="sidebar-section">
       <h3>Dados</h3>
       <div class="action-group">
-        <button class="btn" onclick="loadExample()">⟳ Exemplo Planta 5010</button>
-        <button class="btn danger" onclick="clearAll()">⚠ Limpar tudo</button>
+        <button class="btn" onclick="resetToDefault()">⟳ Carregar exemplo 5010</button>
+        <button class="btn" onclick="loadSeedData()" style="color:var(--green);border-color:var(--green)">＋ Carregar Locais da Planta</button>
+        <button class="btn btn-danger" onclick="clearAll()">⚠ Limpar Tudo</button>
       </div>
     </div>
+
+    <!-- NODE DETAIL -->
     <div class="node-panel" id="node-panel">
-      <div class="np-empty">Selecione um nó<br>para ver detalhes</div>
+      <div class="node-panel-empty">Selecione um nó<br>para ver detalhes e opções</div>
     </div>
   </div>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <div class="main">
     <div class="toolbar">
-      <button class="tbtn" onclick="expAll()">Expandir tudo</button>
-      <button class="tbtn" onclick="colAll()">Recolher tudo</button>
-      <div class="t-sep"></div>
-      <button class="tbtn" onclick="expTo(2)">N2</button>
-      <button class="tbtn" onclick="expTo(3)">N3</button>
-      <button class="tbtn" onclick="expTo(5)">N5</button>
-      <div class="t-sep"></div>
-      <button class="tbtn" onclick="pushToSP()" style="color:var(--green);border-color:var(--green)">↑ Salvar SP</button>
-      <button class="tbtn" onclick="pullFromSP()">↓ Carregar SP</button>
-      <div class="tsearch">
-        <span style="color:var(--text-faint);font-size:11px">🔍</span>
-        <input id="search" placeholder="Buscar nome ou código..." oninput="doSearch(this.value)">
+      <button class="toolbar-btn" onclick="expandAll()">Expandir tudo</button>
+      <button class="toolbar-btn" onclick="collapseAll()">Recolher tudo</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="expandToLevel(2)">Até N2</button>
+      <button class="toolbar-btn" onclick="expandToLevel(3)">Até N3</button>
+      <button class="toolbar-btn" onclick="expandToLevel(5)">Até N5</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="showExport()">Exportar SAP</button>
+      <div class="toolbar-search">
+        <span style="color:var(--text-faint);font-size:12px;">🔍</span>
+        <input type="text" id="search-input" placeholder="Buscar por nome ou código..." oninput="doSearch(this.value)">
       </div>
     </div>
-    <div class="tree-wrap" id="tree-wrap">
+
+    <div class="tree-container" id="tree-container">
       <div class="tree-empty" id="tree-empty">
         <span>🏭</span>
-        Nenhum ativo ainda.<br>
-        Use <strong>"Carregar do SharePoint"</strong> para buscar a versão da equipe<br>
-        ou <strong>"Exemplo Planta 5010"</strong> para começar do zero.
+        Nenhum ativo cadastrado ainda.<br>
+        Clique em <strong>"Adicionar Planta / Raiz"</strong> para começar<br>
+        ou <strong>"Carregar exemplo 5010"</strong> para ver a estrutura sugerida.
       </div>
       <div id="tree-root"></div>
     </div>
-    <div class="stats">
-      <div class="stat">Nós: <b id="s-total">0</b></div>
-      <div class="stat">Equipamentos N7: <b id="s-eq">0</b></div>
-      <div class="stat">Profundidade: <b id="s-dep">0</b></div>
-      <div class="stat">Selecionado: <b id="s-sel">—</b></div>
-      <div class="stat" style="margin-left:auto">Última sync: <b id="s-sync">—</b></div>
+
+    <div class="stats-bar">
+      <div class="stat-item">Total de nós: <span class="stat-val" id="stat-total">0</span></div>
+      <div class="stat-item">Equipamentos (N7): <span class="stat-val" id="stat-equip">0</span></div>
+      <div class="stat-item">Profundidade máx: <span class="stat-val" id="stat-depth">0</span></div>
+      <div class="stat-item">Selecionado: <span class="stat-val" id="stat-selected">—</span></div>
     </div>
   </div>
 </div>
 
-<!-- MODAL ADD -->
-<div class="modal-bg" id="m-add">
-  <div class="modal">
-    <h3 id="m-add-title">Adicionar Nó</h3>
-    <div class="modal-sub" id="m-add-sub"></div>
-    <div class="field"><label>Código</label><input id="a-code" placeholder="Ex: PROD, L91, MF-91-01" style="text-transform:uppercase"></div>
-    <div class="field"><label>Descrição</label><input id="a-name" placeholder="Ex: Produção, Linha 91, Máquina de Formação 01"></div>
-    <div class="field"><label>Nível Hierárquico</label>
-      <select id="a-level">
-        <option value="1">N1 – Planta</option><option value="2">N2 – Área</option>
-        <option value="3">N3 – Subárea</option><option value="4">N4 – Sistema / Linha</option>
-        <option value="5">N5 – Ativo</option><option value="6">N6 – Conjunto</option>
-        <option value="7">N7 – Equipamento</option><option value="8">N8 – Componente</option>
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal-box">
+    <h3 id="modal-add-title">Adicionar Nó</h3>
+    <div class="modal-subtitle" id="modal-add-sub">Novo item na raiz da árvore</div>
+    <div class="field">
+      <label>Código (abreviação)</label>
+      <input id="add-code" placeholder="Ex: PROD, DEC, L91, MF-91-01" style="text-transform:uppercase">
+    </div>
+    <div class="field">
+      <label>Descrição / Nome</label>
+      <input id="add-name" placeholder="Ex: Produção, Decoração, Linha 91">
+    </div>
+    <div class="field">
+      <label>Nível Hierárquico</label>
+      <select id="add-level">
+        <option value="1">N1 – Planta</option>
+        <option value="2">N2 – Área</option>
+        <option value="3">N3 – Subárea</option>
+        <option value="4">N4 – Sistema / Linha</option>
+        <option value="5">N5 – Ativo</option>
+        <option value="6">N6 – Conjunto</option>
+        <option value="7">N7 – Equipamento</option>
+        <option value="8">N8 – Componente</option>
       </select>
     </div>
-    <div class="field"><label>Observação (opcional)</label><textarea id="a-obs" placeholder="Criticidade, localização física..."></textarea></div>
+    <div class="field">
+      <label>Observação (opcional)</label>
+      <textarea id="add-obs" placeholder="Criticidade, localização física, etc."></textarea>
+    </div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeM('m-add')">Cancelar</button>
-      <button class="btn primary" onclick="confirmAdd()">Adicionar</button>
+      <button class="btn" onclick="closeModal('modal-add')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmAdd()">Adicionar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL EDIT -->
-<div class="modal-bg" id="m-edit">
-  <div class="modal">
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
     <h3>Editar Nó</h3>
-    <div class="modal-sub" id="e-code-sub"></div>
-    <div class="field"><label>Código</label><input id="e-code" style="text-transform:uppercase"></div>
-    <div class="field"><label>Descrição</label><input id="e-name"></div>
-    <div class="field"><label>Nível</label>
-      <select id="e-level">
-        <option value="1">N1 – Planta</option><option value="2">N2 – Área</option>
-        <option value="3">N3 – Subárea</option><option value="4">N4 – Sistema / Linha</option>
-        <option value="5">N5 – Ativo</option><option value="6">N6 – Conjunto</option>
-        <option value="7">N7 – Equipamento</option><option value="8">N8 – Componente</option>
+    <div class="modal-subtitle" id="edit-full-code"></div>
+    <div class="field">
+      <label>Código</label>
+      <input id="edit-code" style="text-transform:uppercase">
+    </div>
+    <div class="field">
+      <label>Descrição / Nome</label>
+      <input id="edit-name">
+    </div>
+    <div class="field">
+      <label>Nível Hierárquico</label>
+      <select id="edit-level">
+        <option value="1">N1 – Planta</option>
+        <option value="2">N2 – Área</option>
+        <option value="3">N3 – Subárea</option>
+        <option value="4">N4 – Sistema / Linha</option>
+        <option value="5">N5 – Ativo</option>
+        <option value="6">N6 – Conjunto</option>
+        <option value="7">N7 – Equipamento</option>
+        <option value="8">N8 – Componente</option>
       </select>
     </div>
-    <div class="field"><label>Observação</label><textarea id="e-obs"></textarea></div>
+    <div class="field">
+      <label>Observação</label>
+      <textarea id="edit-obs"></textarea>
+    </div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeM('m-edit')">Cancelar</button>
-      <button class="btn primary" onclick="confirmEdit()">Salvar</button>
+      <button class="btn" onclick="closeModal('modal-edit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmEdit()">Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL EXPORT -->
-<div class="modal-bg" id="m-export">
-  <div class="modal" style="width:540px">
+<div class="modal-overlay" id="modal-export">
+  <div class="modal-box" style="width:560px">
     <h3>Exportar Estrutura</h3>
-    <div class="modal-sub">Formato SAP PM · CSV Excel · Árvore textual</div>
-    <div style="display:flex;gap:7px;margin-bottom:10px">
-      <button class="tbtn" id="fmt-sap" onclick="setFmt('sap')">Formato SAP</button>
-      <button class="tbtn" id="fmt-csv" onclick="setFmt('csv')">CSV (Excel)</button>
-      <button class="tbtn" id="fmt-txt" onclick="setFmt('txt')">Árvore Textual</button>
+    <div class="modal-subtitle">Formato compatível com SAP PM / planilha Excel</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn" onclick="setExportFormat('sap')" id="fmt-sap" style="border-color:var(--accent);color:var(--accent)">Formato SAP</button>
+      <button class="btn" onclick="setExportFormat('csv')" id="fmt-csv">CSV (Excel)</button>
+      <button class="btn" onclick="setExportFormat('indent')" id="fmt-indent">Árvore Textual</button>
     </div>
-    <div class="export-area" id="exp-content"></div>
+    <div class="export-area" id="export-content"></div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeM('m-export')">Fechar</button>
-      <button class="btn success" onclick="copyExp()">Copiar</button>
+      <button class="btn" onclick="closeModal('modal-export')">Fechar</button>
+      <button class="btn btn-success" onclick="copyExport()">Copiar Texto</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL IMPORT -->
-<div class="modal-bg" id="m-import">
-  <div class="modal">
+<div class="modal-overlay" id="modal-import">
+  <div class="modal-box">
     <h3>Importar JSON</h3>
-    <div class="modal-sub">Cole o conteúdo de um arquivo JSON exportado anteriormente</div>
-    <div class="field"><label>Conteúdo JSON</label><textarea id="imp-json" style="min-height:160px;font-family:var(--mono);font-size:11px" placeholder='{"tree":[...],"nextId":1}'></textarea></div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeM('m-import')">Cancelar</button>
-      <button class="btn primary" onclick="confirmImport()">Importar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL FLOW GUIDE -->
-<div class="modal-bg" id="m-guide">
-  <div class="modal" style="width:600px;max-height:85vh;overflow-y:auto">
-    <h3>Como criar os dois flows no Power Automate</h3>
-    <div class="modal-sub">Passo a passo — ~15 minutos, sem código</div>
-
-    <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.8">
-      <strong style="display:block;margin-bottom:8px;font-size:13px">📋 Pré-requisito: criar uma Lista no SharePoint</strong>
-      1. Abra o SharePoint da O-I → seu site de equipe PCM<br>
-      2. Clique em <b>+ Novo → Lista</b><br>
-      3. Nome: <b>ArvorePCM</b><br>
-      4. Adicione uma coluna do tipo <b>Várias linhas de texto</b> com nome <b>Conteudo</b><br>
-      5. Crie um item chamado <b>arvore_5010</b> nessa lista (deixe Conteudo vazio)
-    </div>
-
-    <div style="background:var(--n2b);border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.8;border:1px solid #b8e8d0">
-      <strong style="display:block;margin-bottom:8px;font-size:13px;color:var(--n2)">▼ FLOW 1 — Carregar (GET)</strong>
-      1. Power Automate → <b>+ Criar → Fluxo de nuvem instantâneo</b><br>
-      2. Trigger: <b>"Quando uma solicitação HTTP é recebida"</b><br>
-      3. Adicionar ação: <b>SharePoint → Obter item</b><br>
-      &nbsp;&nbsp;· Endereço do Site: seu site SharePoint<br>
-      &nbsp;&nbsp;· Nome da Lista: <b>ArvorePCM</b><br>
-      &nbsp;&nbsp;· ID: <b>1</b> (o item que você criou)<br>
-      4. Adicionar ação: <b>Resposta</b><br>
-      &nbsp;&nbsp;· Código de Status: 200<br>
-      &nbsp;&nbsp;· Corpo: <code>@{outputs('Obter_item')?['body/Conteudo']}</code><br>
-      &nbsp;&nbsp;· Cabeçalhos: <code>Content-Type: application/json</code><br>
-      5. Salvar → copie a <b>URL HTTP POST</b> gerada → cole no campo GET deste app
-    </div>
-
-    <div style="background:var(--n1b);border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.8;border:1px solid #b0cce8">
-      <strong style="display:block;margin-bottom:8px;font-size:13px;color:var(--n1)">▲ FLOW 2 — Salvar (POST)</strong>
-      1. Power Automate → <b>+ Criar → Fluxo de nuvem instantâneo</b><br>
-      2. Trigger: <b>"Quando uma solicitação HTTP é recebida"</b><br>
-      &nbsp;&nbsp;· Esquema JSON do Corpo: <code>{"type":"object","properties":{"payload":{"type":"string"}}}</code><br>
-      3. Adicionar ação: <b>SharePoint → Atualizar item</b><br>
-      &nbsp;&nbsp;· Endereço do Site: seu site SharePoint<br>
-      &nbsp;&nbsp;· Nome da Lista: <b>ArvorePCM</b><br>
-      &nbsp;&nbsp;· ID: <b>1</b><br>
-      &nbsp;&nbsp;· Conteudo: <code>@{triggerBody()?['payload']}</code><br>
-      4. Adicionar ação: <b>Resposta</b><br>
-      &nbsp;&nbsp;· Código de Status: 200<br>
-      &nbsp;&nbsp;· Corpo: <code>{"ok":true}</code><br>
-      5. Salvar → copie a <b>URL HTTP POST</b> gerada → cole no campo POST deste app
-    </div>
-
-    <div style="background:#fff8e8;border-radius:8px;padding:12px;font-size:12px;line-height:1.7;border:1px solid #e0c060">
-      <strong>⚠ Importante:</strong> Os flows precisam estar <b>Ativos</b> e com permissão de execução para toda a equipe (compartilhe o flow com os membros da equipe PCM no Power Automate).
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn primary" onclick="closeM('m-guide')">Entendido, vou criar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONFLICT -->
-<div class="modal-bg" id="m-conflict">
-  <div class="modal">
-    <h3>⚠ Conflito detectado</h3>
-    <div class="modal-sub">O SharePoint tem uma versão mais recente</div>
-    <div class="conflict-box">
-      <strong>O que fazer?</strong>
-      O SharePoint foi atualizado por outro membro da equipe enquanto você trabalhava.<br>
-      Escolha qual versão manter.
+    <div class="modal-subtitle">Cole o conteúdo JSON exportado anteriormente</div>
+    <div class="field">
+      <label>Conteúdo JSON</label>
+      <textarea id="import-json" style="min-height:180px;font-family:var(--font-mono);font-size:11px" placeholder='[{"id":1,"code":"PL5010",...}]'></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn danger" onclick="resolveConflict('local')">Manter minha versão (sobrescreve SP)</button>
-      <button class="btn primary" onclick="resolveConflict('remote')">Usar versão do SharePoint</button>
+      <button class="btn" onclick="closeModal('modal-import')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmImport()">Importar</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ── CONSTANTS ──────────────────────────────────────────────────────────
-const LEVELS=[
-  {n:1,name:'Planta',color:'#1a4f8a',bg:'#e8f0f8'},
-  {n:2,name:'Área',color:'#127a52',bg:'#e4f5ed'},
-  {n:3,name:'Subárea',color:'#8a5a00',bg:'#fdf0d8'},
-  {n:4,name:'Sistema / Linha',color:'#8a1a5a',bg:'#f8e8f2'},
-  {n:5,name:'Ativo',color:'#4a3a9a',bg:'#eeecf8'},
-  {n:6,name:'Conjunto',color:'#5a5a5a',bg:'#f0f0f0'},
-  {n:7,name:'Equipamento',color:'#9a1a1a',bg:'#f8e8e8'},
-  {n:8,name:'Componente',color:'#2a6a1a',bg:'#e8f5e4'},
+// ─── SUPABASE (backend compartilhado da equipe) ──────────────────
+const SUPABASE_URL = 'https://stkaavlumvqkfcjgjhch.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0a2Fhdmx1bXZxa2ZjamdqaGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzOTE5NjQsImV4cCI6MjA5ODk2Nzk2NH0.8cZwTp-FqtTAffiXs_m-i2pj2U2gO12_cxtMqFi_-G8';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const TABLE = 'pcm_nodes';
+
+// ─── DATA ───────────────────────────────────────────────────────
+const LEVELS = [
+  {n:1, name:'Planta',         color:'#1a4f8a', bg:'#e8f0f8'},
+  {n:2, name:'Área',           color:'#127a52', bg:'#e4f5ed'},
+  {n:3, name:'Subárea',        color:'#8a5a00', bg:'#fdf0d8'},
+  {n:4, name:'Sistema / Linha',color:'#8a1a5a', bg:'#f8e8f2'},
+  {n:5, name:'Ativo',          color:'#4a3a9a', bg:'#eeecf8'},
+  {n:6, name:'Conjunto',       color:'#5a5a5a', bg:'#f0f0f0'},
+  {n:7, name:'Equipamento',    color:'#9a1a1a', bg:'#f8e8e8'},
+  {n:8, name:'Componente',     color:'#2a6a1a', bg:'#e8f5e4'},
 ];
-const LC={},LB={};
-LEVELS.forEach(l=>{LC[l.n]=l.color;LB[l.n]=l.bg;});
+const LC = {};
+const LB = {};
+LEVELS.forEach(l => { LC[l.n]=l.color; LB[l.n]=l.bg; });
 
-const SK_TREE='pcm_tree_5010';
-const SK_CFG='pcm_sp_config';
-const SK_TS='pcm_last_sync_ts';
+let tree = [];
+let selectedId = null;
+let exportFormat = 'sap';
+let searchTerm = '';
+let unsaved = false;
+let expandedMap = {};
+let modalOpenCount = 0;
+let pendingRemoteRefresh = false;
 
-// ── STATE ──────────────────────────────────────────────────────────────
-let tree=[], selId=null, nextId=1, addParentId=null, expFmt='sap', searchTerm='';
-let cfgGet='https://defaultaf0ee3430c8042beaeacd688e63ecf.48.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a53647cee077426989d2f54b9700b7f4/triggers/manual/paths/invoke?api-version=1', cfgPost='https://defaultaf0ee3430c8042beaeacd688e63ecf.48.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/922cf2948d9a40f18bb194e7786224a7/triggers/manual/paths/invoke?api-version=1';
-let lastSyncTs=0;
-let remoteSnapshot='';
-
-// ── EMBEDDED SEED DATA ────────────────────────────────────────────────
-const SEED_DATA = {"tree":[{"id":118,"code":"5010","name":"Planta RJ","level":1,"parentId":null,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.147696+00:00","children":[{"id":119,"code":"PROD","name":"Produção","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.283268+00:00","children":[{"id":120,"code":"CDM","name":"Casa de Mistura","level":2,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.387342+00:00","children":[]},{"id":121,"code":"FRN","name":"Fornos","level":2,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.444058+00:00","children":[{"id":122,"code":"FR7","name":"Forno 07","level":3,"parentId":121,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.502679+00:00","children":[]},{"id":123,"code":"FR9","name":"Forno 09","level":3,"parentId":121,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.609201+00:00","children":[{"id":124,"code":"L91","name":"Linha 91","level":4,"parentId":123,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.722721+00:00","children":[{"id":125,"code":"ZNF","name":"Zona Fria","level":4,"parentId":124,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.777692+00:00","children":[{"id":126,"code":"MQI","name":"Máquinas de Inspeção","level":4,"parentId":125,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.850092+00:00","children":[]}]},{"id":127,"code":"ZNQ","name":"Zona Quente","level":4,"parentId":124,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:36.981362+00:00","children":[{"id":128,"code":"SL91","name":"Sala 91","level":5,"parentId":127,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.040733+00:00","children":[{"id":129,"code":"AR01","name":"Ar Condicionado","level":7,"parentId":128,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.096654+00:00","children":[]},{"id":130,"code":"SWITCH","name":"SWITCH","level":7,"parentId":128,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.181721+00:00","children":[]}]},{"id":158,"code":"5010-PRO-FAB-L91-GDL","name":"FEEDER / GOB DELIVERY","level":5,"parentId":127,"obs":"","expanded":false,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T14:10:22.846885+00:00","children":[{"id":159,"code":"60030803","name":"CABO DE EXTENSÃO DO MOTOR DO IDS, 5 PÉS","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T14:12:03.142668+00:00","children":[]},{"id":160,"code":"60030811","name":"CABO RESOLVER IDS-0201-GR05","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T14:12:21.376899+00:00","children":[]},{"id":161,"code":"27691","name":"SERVO GOB","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T14:12:49.378751+00:00","children":[]},{"id":162,"code":"5010-PRO-FAB-L91-GDL-MFN","name":"MECANISMO DE FUNIL INTERMEDIÁRIO","level":6,"parentId":158,"obs":"","expanded":false,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:21:55.622077+00:00","children":[{"id":163,"code":"65324","name":"FUNIL INTERMEDIÁRIO","level":7,"parentId":162,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:22:17.455741+00:00","children":[]}]},{"id":164,"code":"5010-PRO-FAB-L91-GDL-MDF","name":"MECANISMO DE FEEDER","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:23:38.418888+00:00","children":[]},{"id":165,"code":"5010-PRO-FAB-L91-GDL-MDC","name":"MECANISMO DE CAMISA","level":6,"parentId":158,"obs":"","expanded":false,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:24:56.728893+00:00","children":[{"id":166,"code":"60030803","name":"CABO DE EXTENSÃO DO MOTOR DO IDS, 5 PÉS","level":7,"parentId":165,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:25:14.439444+00:00","children":[]},{"id":167,"code":"60030811","name":"CABO RESOLVER IDS-0201-GR05","level":7,"parentId":165,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:25:34.980167+00:00","children":[]}]},{"id":168,"code":"10432","name":"MONTAG SERVO (IDS) C/PORCA HF-0395-GR27","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:26:33.033724+00:00","children":[]},{"id":169,"code":"10433","name":"SERVO TUBO PARTES HF-0395-GR25 (GR23&27)","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:27:02.802881+00:00","children":[]},{"id":170,"code":"10434","name":"SERVO MOTOR IDS-3-53","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:27:30.739234+00:00","children":[]},{"id":171,"code":"10435","name":"MONTAGEM STANDARD ROTAÇÃO HF-0395-GR03","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:27:46.400838+00:00","children":[]},{"id":172,"code":"10436","name":"SISTEMA DE ROTAÇÃO 80:1  HF-0395-GR05","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:28:11.342842+00:00","children":[]},{"id":173,"code":"10437","name":"MONTAGEM CAMISA 11\" HF-0395-GR14","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:28:35.899637+00:00","children":[]},{"id":174,"code":"10438","name":"CONT REMOTO ELEVAÇÃO CAMISA HF-0395-GR19","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:28:55.486316+00:00","children":[]},{"id":175,"code":"10439","name":"ROLAMENTO MECANISMO ELEVAÇÃO HF-7125-0","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:29:33.151961+00:00","children":[]},{"id":176,"code":"10440","name":"REDUTOR ELEVAÇÃO DE CAMISA 20:1 HF-7388","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T16:30:00.388583+00:00","children":[]},{"id":178,"code":"27698","name":"PISTA DA CAMISA","level":6,"parentId":158,"obs":"","expanded":true,"updated_by":"Kátia -PCM","updated_at":"2026-07-09T17:21:18.134189+00:00","children":[]}]}]}]},{"id":131,"code":"L92","name":"Linha 92","level":4,"parentId":123,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.320108+00:00","children":[]},{"id":132,"code":"L93","name":"Linha 93","level":4,"parentId":123,"obs":"","expanded":false,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.397219+00:00","children":[{"id":133,"code":"ZNF","name":"Zona Fria","level":5,"parentId":132,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.440954+00:00","children":[]},{"id":134,"code":"ZNQ","name":"Zona Quente","level":5,"parentId":132,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.512026+00:00","children":[]}]}]}]},{"id":135,"code":"DEC","name":"Decoração","level":2,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.57691+00:00","children":[]},{"id":136,"code":"EQP","name":"Equipamentos","level":2,"parentId":119,"obs":"","expanded":false,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.633017+00:00","children":[{"id":137,"code":"OFC1","name":"Oficina 1","level":3,"parentId":136,"obs":"","expanded":true,"updated_by":"Monique","updated_at":"2026-07-09T17:20:03.920821+00:00","children":[{"id":138,"code":"ISN6","name":"Torno","level":7,"parentId":137,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.807298+00:00","children":[{"id":147,"code":"LB300","name":"LB300","level":7,"parentId":138,"obs":"LB300 - MW - 120263 - EQ 220635","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T12:42:14.741813+00:00","children":[]},{"id":148,"code":"LB15","name":"LB15 II","level":7,"parentId":138,"obs":"LB15 II - 4375 - EQ 220636","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T12:44:57.227921+00:00","children":[]},{"id":149,"code":"KDT","name":"KADET","level":7,"parentId":138,"obs":"Kadet - LNC 8 - C866 - EQ 220637","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T17:45:36.378571+00:00","children":[]},{"id":150,"code":"FREV","name":"FRESA VEEKER","level":7,"parentId":138,"obs":"FRESA VEEKER - EQ 220639","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T17:50:07.61841+00:00","children":[]},{"id":151,"code":"CDU","name":"CENTRO DE USINAGEM","level":7,"parentId":138,"obs":"CENTRO DE USINAGEM","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:13:18.570686+00:00","children":[]},{"id":152,"code":"JTA","name":"JATEADEIRA AUTOMÁTICA","level":7,"parentId":138,"obs":"MÁQUINA DE JATEAR AUTOMÁTICA - EQ 157065","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:15:00.399864+00:00","children":[]},{"id":153,"code":"ARC","name":"AR-CONDICIONADO","level":7,"parentId":138,"obs":"AR-CONDICIONADO DE JANELA","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:16:02.188063+00:00","children":[]},{"id":154,"code":"JTM1","name":"JATEADEIRA MANUAL 1","level":7,"parentId":138,"obs":"MÁQUINA DE JATEAR MANUAL 1 - EQ 157063","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:18:45.482561+00:00","children":[]},{"id":155,"code":"JTM2","name":"JATEADEIRA MANUAL 2","level":7,"parentId":138,"obs":"MÁQUINA DE JATEAR MANUAL 2 - EQ 157064","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:19:56.252536+00:00","children":[]},{"id":156,"code":"SNC","name":"SONICAN","level":7,"parentId":138,"obs":"SONICAN 1 - EQ 220640","expanded":true,"updated_by":"Monique","updated_at":"2026-07-07T18:20:46.584921+00:00","children":[]}]},{"id":179,"code":"TLH1","name":"Talha 1","level":7,"parentId":137,"obs":"","expanded":true,"updated_by":"Monique","updated_at":"2026-07-09T17:23:44.653846+00:00","children":[]},{"id":180,"code":"TLH2","name":"Talha 2","level":4,"parentId":137,"obs":"","expanded":true,"updated_by":"Monique","updated_at":"2026-07-09T17:24:16.456458+00:00","children":[]},{"id":181,"code":"TLH3","name":"Talha 3","level":7,"parentId":137,"obs":"","expanded":true,"updated_by":"Monique","updated_at":"2026-07-09T17:24:48.12754+00:00","children":[]}]},{"id":177,"code":"OFC2","name":"Oficina 2","level":3,"parentId":136,"obs":"","expanded":true,"updated_by":"Monique","updated_at":"2026-07-09T17:19:17.320599+00:00","children":[]}]},{"id":263,"code":"SCOORPROD","name":"Sala Coordenação","level":3,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":264,"code":"MUDANCA","name":"Mudança","level":3,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":265,"code":"INSPAUT","name":"Inspeção Automática","level":3,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":266,"code":"LABQUAL","name":"Laboratório Qualidade","level":3,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":267,"code":"SSUPER","name":"Sala Supervisão","level":3,"parentId":119,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":139,"code":"ADM","name":"Administração","level":2,"parentId":118,"obs":"","expanded":false,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:37.945122+00:00","children":[{"id":140,"code":"RH","name":"RH","level":2,"parentId":139,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:38.022009+00:00","children":[]},{"id":141,"code":"EHS","name":"EHS","level":2,"parentId":139,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:38.174061+00:00","children":[]},{"id":142,"code":"GER","name":"Gerência","level":2,"parentId":139,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:38.262837+00:00","children":[]}]},{"id":143,"code":"LOG","name":"Logística","level":2,"parentId":118,"obs":"","expanded":false,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:38.344385+00:00","children":[{"id":144,"code":"GAP","name":"Galpões","level":3,"parentId":143,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:30:33.691811+00:00","children":[{"id":146,"code":"A","name":"Galpão A","level":3,"parentId":144,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:31:01.644146+00:00","children":[]}]},{"id":242,"code":"BYD","name":"BYD","level":3,"parentId":143,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":238,"code":"BYDCARREG","name":"BYD Carregamento","level":4,"parentId":242,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":239,"code":"BYDMANUT","name":"BYD Manutenção","level":4,"parentId":242,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":240,"code":"BYDLAV","name":"BYD Lavagem","level":4,"parentId":242,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":241,"code":"BYDPNEU","name":"BYD Armazenamento Pneu","level":4,"parentId":242,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":249,"code":"RUAS","name":"Ruas Internas","level":3,"parentId":143,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":243,"code":"RUAI","name":"Rua I","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":244,"code":"RUAH","name":"Rua H","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":245,"code":"RUAG","name":"Rua G","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":246,"code":"RUAF","name":"Rua F","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":247,"code":"RUAE","name":"Rua E","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":248,"code":"RUAD","name":"Rua D","level":4,"parentId":249,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":250,"code":"LOGER","name":"Loger (Contêiner)","level":3,"parentId":143,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":145,"code":"PORT","name":"Portaria","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-07T12:27:38.562286+00:00","children":[{"id":182,"code":"P2","name":"Recepção","level":3,"parentId":145,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":183,"code":"SALAG4S","name":"Sala G4S","level":3,"parentId":145,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":184,"code":"SALABAF","name":"Sala Bafômetro","level":3,"parentId":145,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":185,"code":"SALAESPERA","name":"Sala de Espera","level":3,"parentId":145,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":186,"code":"PRED","name":"Prédio Externo","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":197,"code":"AMB","name":"Ambulatório","level":3,"parentId":186,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":187,"code":"CONS1","name":"Consultório Dr Fabrício","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":188,"code":"SR1","name":"Sala de Reunião","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":189,"code":"CONS2","name":"Consultório Fonoaudiólogo","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":190,"code":"ARQAMB","name":"Arquivo Ambulatório","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":191,"code":"ALMAMB","name":"Almoxarifado Ambulatório","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":192,"code":"SATEND","name":"Sala de Atendimento","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":193,"code":"VESTAMB","name":"Vestiário Ambulatório","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":194,"code":"BANAMB","name":"Banheiro","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":195,"code":"SASGAMB","name":"Sala ASG","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":196,"code":"COPAAMB","name":"Copa Ambulatório","level":4,"parentId":197,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":198,"code":"ANTIGORH","name":"Antigo RH","level":3,"parentId":186,"obs":"Desativado","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":199,"code":"BRADESCO","name":"Banco Bradesco","level":3,"parentId":186,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":201,"code":"HOSPEDES","name":"Casa de Hóspedes","level":2,"parentId":118,"obs":"Desativado","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":200,"code":"7QRT","name":"7 Quartos","level":3,"parentId":201,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":202,"code":"GER","name":"Gerência","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":210,"code":"ANEXOFAC","name":"Anexo Facilities","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":211,"code":"SALAFAC","name":"Sala Facilities","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":212,"code":"ENGMEET","name":"Engineering Meeting Room","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":213,"code":"MGMTMEET","name":"Management Meeting","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":214,"code":"POGMEET","name":"Power of Glass Meeting Room","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":215,"code":"VIDMEET","name":"Video Conference/Meeting Room","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":216,"code":"SALAENG","name":"Sala Engenharia","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":217,"code":"TI","name":"TI","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":218,"code":"ANEX4","name":"Anexo 4","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":219,"code":"ANEX3","name":"Anexo 3 - Broadcast TI","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":220,"code":"ANEX2","name":"Anexo 2 - Eleve","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":205,"code":"RHGER","name":"RH","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":203,"code":"SRRH","name":"Sala de Reunião RH","level":4,"parentId":205,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":204,"code":"STRH","name":"Sala de Treinamento","level":4,"parentId":205,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":207,"code":"EHSGER","name":"EHS","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":206,"code":"SREHS","name":"Sala Reunião EHS","level":4,"parentId":207,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":209,"code":"SALAGER","name":"Sala Gerência","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":208,"code":"SALAGERPL","name":"Sala Gerente Planta","level":4,"parentId":209,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":221,"code":"CPD","name":"Sala Servidor","level":3,"parentId":202,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":223,"code":"CONV","name":"Área de Convivência","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":222,"code":"SALEST","name":"Sala de Estudos","level":3,"parentId":223,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":237,"code":"REF","name":"Refeitório","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":224,"code":"ESTREF","name":"Estoque","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":225,"code":"MARG","name":"Margarefe","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":226,"code":"SALADA","name":"Salada","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":227,"code":"SALANU","name":"Sala Nutricionista","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":228,"code":"APANELA","name":"Área de Panela","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":229,"code":"ACACC","name":"Área de Cocção","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":230,"code":"ADEVOL","name":"Área de Devolução","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":231,"code":"AUTEN","name":"Área de Utensílios/Descartáveis","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":232,"code":"ARECEB","name":"Área de Recebimento","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":233,"code":"BANFEM","name":"Banheiro Feminino","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":234,"code":"BANMAS","name":"Banheiro Masculino","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":235,"code":"CAMARAS","name":"2 Câmaras Frias","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":236,"code":"REFRIGREF","name":"Refrigeração Refeitório","level":3,"parentId":237,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":251,"code":"SOLNAS","name":"Sala Sol Nascente","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":252,"code":"SALAGSC","name":"Sala GSC","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":253,"code":"ACETIL","name":"Área Acetileno","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":254,"code":"DEC","name":"Decoração","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":259,"code":"CZF","name":"Central Zona Fria","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[{"id":255,"code":"BANFEMCZF","name":"Banheiro Feminino","level":3,"parentId":259,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":256,"code":"BANMASCZF","name":"Banheiro Masculino","level":3,"parentId":259,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":257,"code":"SALAQUAL","name":"Sala Qualidade","level":3,"parentId":259,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":258,"code":"SALAMANUT","name":"Sala Manutenção","level":3,"parentId":259,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]},{"id":260,"code":"CANTINA","name":"Cantina","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":261,"code":"VESTTEC","name":"Vestiário Terceiro","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]},{"id":262,"code":"ALMOXA","name":"Almoxarifado","level":2,"parentId":118,"obs":"","expanded":true,"updated_by":"Ewerton","updated_at":"2026-07-09T00:00:00.000000+00:00","children":[]}]}],"nextId":268};
-
-// ── INIT ───────────────────────────────────────────────────────────────
-(function init(){
-  buildLegend();
-  const saved=localStorage.getItem(SK_TREE);
-  if(saved){
-    try{const p=JSON.parse(saved);tree=p.tree||[];nextId=p.nextId||1;}
-    catch(e){tree=SEED_DATA.tree;nextId=SEED_DATA.nextId;}
-  } else {
-    // First load — use embedded seed data
-    tree=SEED_DATA.tree;
-    nextId=SEED_DATA.nextId;
-    localSave();
+const USER_KEY = 'pcm_user_name';
+function getUserName() { return localStorage.getItem(USER_KEY) || ''; }
+function promptUserName() {
+  const cur = getUserName();
+  const val = prompt('Como você quer aparecer para o time (ex: Ewerton - PCM)?', cur);
+  if (val && val.trim()) {
+    localStorage.setItem(USER_KEY, val.trim());
+    document.getElementById('user-badge-text').textContent = 'Você: ' + val.trim();
   }
-  const ts=localStorage.getItem(SK_TS);
-  if(ts) lastSyncTs=parseInt(ts);
-  showLayout();
+}
+
+function setSyncStatus(state) {
+  const dot = document.getElementById('save-dot');
+  const st = document.getElementById('save-status');
+  if (state === 'ok') { dot.classList.remove('unsaved'); dot.style.background='#4caf50'; st.textContent='Sincronizado'; }
+  else if (state === 'syncing') { dot.classList.add('unsaved'); dot.style.background='#ff9800'; st.textContent='Sincronizando…'; }
+  else { dot.classList.add('unsaved'); dot.style.background='#c62828'; st.textContent='Offline / erro'; }
+}
+
+function showLastEdit(by, when) {
+  if (!by) return;
+  const el = document.getElementById('last-edit-indicator');
+  const txt = document.getElementById('last-edit-text');
+  const t = when ? new Date(when).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+  txt.textContent = 'Última edição: ' + by + (t ? ' às '+t : '');
+  el.style.display = 'flex';
+}
+
+// Converte linhas planas do banco em árvore aninhada (mesmo formato usado no resto do app)
+function rowsToTree(rows) {
+  const byId = {};
+  rows.forEach(r => {
+    byId[r.id] = {
+      id: r.id, code: r.code, name: r.name, level: r.level, parentId: r.parent_id,
+      obs: r.obs || '', expanded: expandedMap.hasOwnProperty(r.id) ? expandedMap[r.id] : true,
+      updated_by: r.updated_by || '', updated_at: r.updated_at,
+      children: []
+    };
+  });
+  const roots = [];
+  rows.forEach(r => {
+    const node = byId[r.id];
+    if (r.parent_id && byId[r.parent_id]) byId[r.parent_id].children.push(node);
+    else roots.push(node);
+  });
+  return roots;
+}
+
+async function fetchTreeFromDB() {
+  const { data, error } = await sb.from(TABLE).select('*').order('parent_id', {ascending:true, nullsFirst:true}).order('id', {ascending:true});
+  if (error) { setSyncStatus('error'); console.error(error); return null; }
+  return data;
+}
+
+async function load() {
+  setSyncStatus('syncing');
+  const rows = await fetchTreeFromDB();
+  if (rows === null) return false;
+  tree = rowsToTree(rows);
+  setSyncStatus('ok');
+  const last = rows.slice().sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+  if (last) showLastEdit(last.updated_by, last.updated_at);
+  return rows.length > 0;
+}
+
+function snapshotExpanded(nodes=tree) {
+  nodes.forEach(n => { expandedMap[n.id]=n.expanded; snapshotExpanded(n.children); });
+}
+
+async function refreshFromRemote(byWho, when) {
+  if (modalOpenCount > 0) { pendingRemoteRefresh = true; return; }
+  snapshotExpanded();
+  const rows = await fetchTreeFromDB();
+  if (rows === null) return;
+  tree = rowsToTree(rows);
   renderAll();
-  // Auto-pull from SharePoint on load
-  setTimeout(()=>pullFromSP(), 800);
-})();
-
-function loadConfig(){
-  const c=localStorage.getItem(SK_CFG);
-  if(c){try{const p=JSON.parse(c);cfgGet=p.get||'';cfgPost=p.post||'';}catch(e){}}
-  if(cfgGet) document.getElementById('cfg-get').value=cfgGet;
-  if(cfgPost) document.getElementById('cfg-post').value=cfgPost;
+  const n = selectedId ? findNode(selectedId) : null;
+  renderNodePanel(n);
+  if (byWho) { showLastEdit(byWho, when); showToast('Atualizado por ' + byWho); }
+  setSyncStatus('ok');
 }
 
-function saveConfig(){
-  cfgGet=document.getElementById('cfg-get').value.trim();
-  cfgPost=document.getElementById('cfg-post').value.trim();
-  if(!cfgGet||!cfgPost){toast('Cole as duas URLs antes de conectar','err');return;}
-  localStorage.setItem(SK_CFG,JSON.stringify({get:cfgGet,post:cfgPost}));
-  showLayout();
-  toast('Configuração salva! Carregando do SharePoint...','ok');
-  pullFromSP();
+function setUnsaved(val) {
+  unsaved = val; // status real de sincronização é tratado por setSyncStatus()
 }
 
-function showConfig(){
-  document.getElementById('setup-banner').style.display='flex';
+// ─── UTILS ────────────────────────────────────────────────────────
+let tempIdCounter = -1; // ids negativos provisórios, usados só até persistir no Supabase
+function makeNode(code, name, level, parentId=null, obs='') {
+  return {id:tempIdCounter--, code:code.toUpperCase(), name, level, parentId, obs, expanded:true, children:[]};
 }
 
-function showLayout(){
-  document.getElementById('setup-banner').style.display='none';
-  document.getElementById('main-layout').style.display='grid';
+async function insertNodeDB(code, name, level, parentId, obs) {
+  const who = getUserName() || 'Anônimo';
+  const { data, error } = await sb.from(TABLE).insert({
+    code: code.toUpperCase(), name, level, parent_id: parentId, obs, updated_by: who
+  }).select().single();
+  if (error) { setSyncStatus('error'); alert('Erro ao salvar no banco: ' + error.message); return null; }
+  setSyncStatus('ok');
+  showLastEdit(who, data.updated_at);
+  return data;
 }
 
-// ── SHAREPOINT SYNC ────────────────────────────────────────────────────
-async function pullFromSP(){
-  if(!cfgGet){toast('Configure as URLs primeiro','err');return;}
-  setSyncStatus('spin','Carregando...');
-  try{
-    const r=await fetch(cfgGet,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'get'})});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const txt=await r.text();
-    if(!txt||txt.trim()===''||txt.trim()==='null'){
-      setSyncStatus('warn','SharePoint vazio');
-      toast('SharePoint ainda sem dados. Crie a árvore e salve!','warn');
-      return;
-    }
-    const data=JSON.parse(txt);
-    const incoming=JSON.stringify(data);
-    // conflict check: if we have local edits newer than last sync
-    const localStr=JSON.stringify({tree,nextId});
-    if(lastSyncTs>0 && localStr!==remoteSnapshot && remoteSnapshot!=='' && incoming!==remoteSnapshot){
-      remoteSnapshot=incoming;
-      openM('m-conflict');
-      return;
-    }
-    applyRemote(data,incoming);
-  }catch(e){
-    setSyncStatus('err','Erro ao carregar');
-    const msg = e.message.includes('401') 
-      ? 'Acesso negado (401). Verifique se o flow está ativo e com "Anyone" habilitado.'
-      : e.message.includes('Failed to fetch')
-      ? 'Bloqueado pelo navegador (CORS). Tente acessar pelo Teams ou SharePoint.'
-      : 'Erro: '+e.message;
-    toast(msg,'err');
+async function updateNodeDB(id, fields) {
+  const who = getUserName() || 'Anônimo';
+  const { data, error } = await sb.from(TABLE).update({...fields, updated_by: who}).eq('id', id).select().single();
+  if (error) { setSyncStatus('error'); alert('Erro ao salvar no banco: ' + error.message); return null; }
+  setSyncStatus('ok');
+  showLastEdit(who, data.updated_at);
+  return data;
+}
+
+async function deleteNodeDB(id) {
+  const { error } = await sb.from(TABLE).delete().eq('id', id);
+  if (error) { setSyncStatus('error'); alert('Erro ao excluir no banco: ' + error.message); return false; }
+  setSyncStatus('ok');
+  return true;
+}
+
+function findNode(id, nodes=tree) {
+  for (let n of nodes) {
+    if (n.id === id) return n;
+    const f = findNode(id, n.children);
+    if (f) return f;
   }
-}
-
-function applyRemote(data,raw){
-  tree=data.tree||[];
-  nextId=data.nextId||1;
-  remoteSnapshot=raw||JSON.stringify(data);
-  lastSyncTs=Date.now();
-  localStorage.setItem(SK_TREE,JSON.stringify({tree,nextId}));
-  localStorage.setItem(SK_TS,String(lastSyncTs));
-  setSyncStatus('ok','Sincronizado '+new Date().toLocaleTimeString('pt-BR'));
-  renderAll();
-  toast('Árvore carregada do SharePoint!','ok');
-}
-
-async function pushToSP(){
-  if(!cfgPost){toast('Configure as URLs primeiro','err');return;}
-  setSyncStatus('spin','Salvando...');
-  const payload=JSON.stringify({tree,nextId});
-  try{
-    const r=await fetch(cfgPost,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({payload})});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    remoteSnapshot=payload;
-    lastSyncTs=Date.now();
-    localStorage.setItem(SK_TS,String(lastSyncTs));
-    setSyncStatus('ok','Salvo '+new Date().toLocaleTimeString('pt-BR'));
-    document.getElementById('s-sync').textContent=new Date().toLocaleTimeString('pt-BR');
-    toast('Árvore salva no SharePoint!','ok');
-  }catch(e){
-    setSyncStatus('err','Erro ao salvar');
-    toast('Erro ao salvar no SharePoint: '+e.message,'err');
-  }
-}
-
-async function manualSync(){
-  await pullFromSP();
-}
-
-function resolveConflict(choice){
-  closeM('m-conflict');
-  if(choice==='remote'){
-    try{const d=JSON.parse(remoteSnapshot);applyRemote(d,remoteSnapshot);}catch(e){}
-  } else {
-    pushToSP();
-  }
-}
-
-function setSyncStatus(state,msg){
-  const dot=document.getElementById('sync-dot');
-  const st=document.getElementById('sync-status');
-  dot.className='sync-dot';
-  if(state==='ok') dot.style.background='#4caf50';
-  else if(state==='warn') dot.classList.add('warn');
-  else if(state==='err') dot.classList.add('err');
-  else if(state==='spin') dot.classList.add('spin');
-  st.textContent=msg;
-}
-
-// ── STORAGE ────────────────────────────────────────────────────────────
-function localSave(){
-  localStorage.setItem(SK_TREE,JSON.stringify({tree,nextId}));
-}
-
-// ── UTILS ──────────────────────────────────────────────────────────────
-function makeNode(code,name,level,parentId=null,obs=''){
-  return{id:nextId++,code:code.toUpperCase(),name,level,parentId,obs,expanded:true,children:[]};
-}
-function find(id,nodes=tree){
-  for(let n of nodes){if(n.id===id)return n;const f=find(id,n.children);if(f)return f;}
   return null;
 }
-function del(id,nodes=tree){
-  for(let i=0;i<nodes.length;i++){
-    if(nodes[i].id===id){nodes.splice(i,1);return true;}
-    if(del(id,nodes[i].children))return true;
+
+function deleteNode(id, nodes=tree) {
+  for (let i=0; i<nodes.length; i++) {
+    if (nodes[i].id === id) { nodes.splice(i,1); return true; }
+    if (deleteNode(id, nodes[i].children)) return true;
   }
   return false;
 }
-function buildCode(node){
-  if(!node.parentId)return node.code;
-  const p=find(node.parentId);
-  if(!p)return node.code;
-  return buildCode(p)+'-'+node.code;
-}
-function countAll(nodes=tree){let c=0;for(let n of nodes){c++;c+=countAll(n.children);}return c;}
-function countLv(lv,nodes=tree){let c=0;for(let n of nodes){if(n.level===lv)c++;c+=countLv(lv,n.children);}return c;}
-function maxDep(nodes=tree){let m=0;for(let n of nodes)m=Math.max(m,1+maxDep(n.children));return m;}
 
-// ── RENDER ─────────────────────────────────────────────────────────────
-function renderAll(){
-  const root=document.getElementById('tree-root');
-  const empty=document.getElementById('tree-empty');
-  root.innerHTML='';
-  if(tree.length===0){empty.style.display='block';updateStats();return;}
+function buildCode(node) {
+  if (!node.parentId) return node.code;
+  const p = findNode(node.parentId);
+  if (!p) return node.code;
+  return buildCode(p) + '-' + node.code;
+}
+
+function countAll(nodes=tree) {
+  let c=0;
+  for (let n of nodes) { c++; c+=countAll(n.children); }
+  return c;
+}
+
+function countLevel(lv, nodes=tree) {
+  let c=0;
+  for (let n of nodes) {
+    if (n.level===lv) c++;
+    c+=countLevel(lv,n.children);
+  }
+  return c;
+}
+
+function maxDepth(nodes=tree, d=0) {
+  let m=d;
+  for (let n of nodes) m=Math.max(m,maxDepth(n.children,d+1));
+  return m;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────
+function renderAll() {
+  const root = document.getElementById('tree-root');
+  const empty = document.getElementById('tree-empty');
+  root.innerHTML = '';
+  if (tree.length===0) { empty.style.display='block'; updateStats(); return; }
   empty.style.display='none';
-  tree.forEach(n=>renderNode(n,root,[]));
+  for (let n of tree) renderNode(n, root, []);
   updateStats();
 }
 
-function renderNode(node,container,ancestors){
-  const fc=buildCode(node);
-  const lc=LC[node.level]||'#888';
-  const lb=LB[node.level]||'#f5f5f5';
-  const match=searchTerm&&(node.name.toLowerCase().includes(searchTerm)||fc.toLowerCase().includes(searchTerm));
-  const wrap=document.createElement('div');
+function renderNode(node, container, ancestors) {
+  const fullCode = buildCode(node);
+  const lc = LC[node.level]||'#888';
+  const lb = LB[node.level]||'#f5f5f5';
+  const match = searchTerm && (
+    node.name.toLowerCase().includes(searchTerm) ||
+    fullCode.toLowerCase().includes(searchTerm)
+  );
 
-  const row=document.createElement('div');
-  row.className='node-row'+(selId===node.id?' sel':'')+(match?' hit':'');
-  row.onclick=e=>{e.stopPropagation();selectNode(node.id);};
+  const wrap = document.createElement('div');
+  wrap.className = 'node-wrap';
 
-  // indent
-  const ind=document.createElement('div');
-  ind.style.display='flex';
-  ancestors.forEach((isLast,i)=>{
-    const seg=document.createElement('div');
-    seg.className='indent-seg'+(i===ancestors.length-1?' last':'');
-    if(i===ancestors.length-1&&isLast)seg.style.cssText='border:none';
-    ind.appendChild(seg);
+  const row = document.createElement('div');
+  row.className = 'node-row' + (selectedId===node.id?' selected':'') + (match?' search-match':'');
+  row.setAttribute('data-id', node.id);
+  row.draggable = true;
+  row.onclick = (e) => { e.stopPropagation(); selectNode(node.id); };
+
+  // drag events
+  row.addEventListener('dragstart', e => {
+    e.stopPropagation();
+    dragState.srcId = node.id;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.id);
   });
-  row.appendChild(ind);
+  row.addEventListener('dragend', () => {
+    row.classList.remove('dragging');
+    clearDragHighlights();
+  });
+  row.addEventListener('dragover', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (dragState.srcId === node.id) return;
+    clearDragHighlights();
+    const rect = row.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const h = rect.height;
+    if (y < h * 0.25)      { row.classList.add('drag-over-before'); dragState.mode = 'before'; }
+    else if (y > h * 0.75) { row.classList.add('drag-over-after');  dragState.mode = 'after'; }
+    else                   { row.classList.add('drag-over-child');   dragState.mode = 'child'; }
+    dragState.targetId = node.id;
+    e.dataTransfer.dropEffect = 'move';
+  });
+  row.addEventListener('dragleave', e => {
+    if (!row.contains(e.relatedTarget))
+      row.classList.remove('drag-over-child','drag-over-before','drag-over-after');
+  });
+  row.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    clearDragHighlights();
+    if (dragState.srcId && dragState.targetId && dragState.srcId !== dragState.targetId)
+      performDrop(dragState.srcId, dragState.targetId, dragState.mode);
+    dragState.srcId = dragState.targetId = dragState.mode = null;
+  });
+
+  // indent lines
+  const indent = document.createElement('div');
+  indent.className = 'node-indent';
+  ancestors.forEach((isLast, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'indent-seg' + (i===ancestors.length-1?' last':'');
+    if (i===ancestors.length-1 && isLast) seg.style.setProperty('--line-opacity','0');
+    indent.appendChild(seg);
+  });
+  row.appendChild(indent);
+
+  // drag handle
+  const dh = document.createElement('span');
+  dh.className = 'drag-handle';
+  dh.textContent = '⠿';
+  dh.title = 'Arraste para mover';
+  dh.onclick = e => e.stopPropagation();
+  row.appendChild(dh);
 
   // toggle
-  const tz=document.createElement('div');
-  tz.className='toggle-zone';
-  if(node.children.length>0){
-    const tb=document.createElement('div');
-    tb.className='tog';
-    tb.textContent=node.expanded?'−':'+';
-    tb.onclick=e=>{e.stopPropagation();node.expanded=!node.expanded;renderAll();};
-    tz.appendChild(tb);
+  const toggleZone = document.createElement('div');
+  toggleZone.className = 'toggle-zone';
+  if (node.children.length>0) {
+    const tb = document.createElement('div');
+    tb.className = 'toggle-btn2';
+    tb.textContent = node.expanded ? '−' : '+';
+    tb.onclick = (e) => { e.stopPropagation(); node.expanded=!node.expanded; renderAll(); };
+    toggleZone.appendChild(tb);
   }
-  row.appendChild(tz);
+  row.appendChild(toggleZone);
 
-  const dot=document.createElement('div');
-  dot.className='ndot';
-  dot.style.background=lc;
+  // dot
+  const dot = document.createElement('div');
+  dot.className = 'node-dot2';
+  dot.style.background = lc;
   row.appendChild(dot);
 
-  const lw=document.createElement('div');
-  lw.className='nlabel';
-  const nm=document.createElement('span');nm.className='nname';nm.textContent=node.name;lw.appendChild(nm);
-  const cd=document.createElement('span');cd.className='ncode';cd.textContent=fc;lw.appendChild(cd);
-  if(node.children.length>0){const ct=document.createElement('span');ct.className='ncnt';ct.textContent='('+node.children.length+')';lw.appendChild(ct);}
-  const bd=document.createElement('span');bd.className='nbadge';bd.style.background=lb;bd.style.color=lc;bd.textContent='N'+node.level;lw.appendChild(bd);
-  row.appendChild(lw);
+  // label
+  const labelWrap = document.createElement('div');
+  labelWrap.className = 'node-label-wrap';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'node-name';
+  nameEl.textContent = node.name;
+  labelWrap.appendChild(nameEl);
+
+  const codeEl = document.createElement('span');
+  codeEl.className = 'node-code2';
+  codeEl.textContent = fullCode;
+  labelWrap.appendChild(codeEl);
+
+  if (node.children.length>0) {
+    const cnt = document.createElement('span');
+    cnt.className = 'node-children-count';
+    cnt.textContent = '(' + node.children.length + ')';
+    labelWrap.appendChild(cnt);
+  }
+
+  const badge = document.createElement('span');
+  badge.className = 'node-nbadge';
+  badge.style.background = lb;
+  badge.style.color = lc;
+  badge.textContent = 'N' + node.level;
+  labelWrap.appendChild(badge);
+
+  row.appendChild(labelWrap);
   wrap.appendChild(row);
 
-  if(node.expanded&&node.children.length>0){
-    const cw=document.createElement('div');cw.className='children-wrap';
-    node.children.forEach((c,i)=>renderNode(c,cw,[...ancestors,i===node.children.length-1]));
-    wrap.appendChild(cw);
+  // children
+  if (node.expanded && node.children.length>0) {
+    const childWrap = document.createElement('div');
+    childWrap.className = 'children-wrap';
+    node.children.forEach((child, i) => {
+      const isLast = i===node.children.length-1;
+      renderNode(child, childWrap, [...ancestors, isLast]);
+    });
+    wrap.appendChild(childWrap);
   }
+
   container.appendChild(wrap);
 }
 
-function updateStats(){
-  document.getElementById('s-total').textContent=countAll();
-  document.getElementById('s-eq').textContent=countLv(7);
-  document.getElementById('s-dep').textContent=maxDep();
-  document.getElementById('s-sel').textContent=selId?(find(selId)?.name||'—'):'—';
-  if(lastSyncTs>0) document.getElementById('s-sync').textContent=new Date(lastSyncTs).toLocaleTimeString('pt-BR');
+function updateStats() {
+  document.getElementById('stat-total').textContent = countAll();
+  document.getElementById('stat-equip').textContent = countLevel(7);
+  document.getElementById('stat-depth').textContent = maxDepth();
+  document.getElementById('stat-selected').textContent = selectedId
+    ? (findNode(selectedId)?.name || '—')
+    : '—';
 }
 
-// ── SELECTION ──────────────────────────────────────────────────────────
-function selectNode(id){
-  selId=id;
-  const n=find(id);
-  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=!n);
+// ─── SELECTION ────────────────────────────────────────────────────
+function selectNode(id) {
+  selectedId = id;
+  const n = findNode(id);
+  ['btn-add-child','btn-edit','btn-del'].forEach(b => {
+    document.getElementById(b).disabled = !n;
+  });
   renderNodePanel(n);
   renderAll();
 }
 
-function renderNodePanel(n){
-  const panel=document.getElementById('node-panel');
-  if(!n){panel.innerHTML='<div class="np-empty">Selecione um nó<br>para ver detalhes</div>';return;}
-  const fc=buildCode(n);
-  const lc=LC[n.level]||'#888';
-  const lb=LB[n.level]||'#eee';
-  const lname=LEVELS.find(l=>l.n===n.level)?.name||'';
-  panel.innerHTML=`
-    <div style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);font-family:var(--mono);margin-top:0;margin-bottom:4px">Nome</div>
-    <div style="font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 8px;margin-bottom:8px">${n.name}</div>
-    <div style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);font-family:var(--mono);margin-bottom:4px">Código SAP</div>
-    <div style="font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 8px;margin-bottom:8px;word-break:break-all">${fc}</div>
-    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600;background:${lb};color:${lc}">N${n.level} – ${lname}</span>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:8px;font-family:var(--mono)">${n.children.length} filho(s)</div>
-    ${n.obs?`<div style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);font-family:var(--mono);margin-top:8px;margin-bottom:4px">Observação</div><div style="font-size:12px;color:var(--text-muted);line-height:1.5">${n.obs}</div>`:''}
+function renderNodePanel(n) {
+  const panel = document.getElementById('node-panel');
+  if (!n) { panel.innerHTML='<div class="node-panel-empty">Selecione um nó<br>para ver detalhes</div>'; return; }
+  const fc = buildCode(n);
+  const lc = LC[n.level]||'#888';
+  const lb = LB[n.level]||'#eee';
+  const lname = LEVELS.find(l=>l.n===n.level)?.name||'';
+  panel.innerHTML = `
+    <div class="node-detail-label">Nome</div>
+    <div class="node-detail-value">${n.name}</div>
+    <div class="node-detail-label">Código SAP</div>
+    <div class="node-detail-value">${fc}</div>
+    <div class="node-detail-label">Nível</div>
+    <span class="node-detail-badge" style="background:${lb};color:${lc}">N${n.level} – ${lname}</span>
+    <div class="node-detail-label">Filhos</div>
+    <div class="node-detail-value">${n.children.length} item(ns)</div>
+    ${n.obs ? `<div class="node-detail-label">Observação</div><div class="node-detail-value">${n.obs}</div>` : ''}
+    ${n.updated_by ? `<div class="node-detail-label">Última edição</div><div class="node-detail-value">${n.updated_by}${n.updated_at ? ' — ' + new Date(n.updated_at).toLocaleString('pt-BR') : ''}</div>` : ''}
   `;
 }
 
-// ── ADD / EDIT / DELETE ────────────────────────────────────────────────
-function openAdd(parentId){
-  addParentId=parentId;
-  const parent=parentId?find(parentId):null;
-  const sugg=parent?Math.min(parent.level+1,8):1;
-  document.getElementById('a-code').value='';
-  document.getElementById('a-name').value='';
-  document.getElementById('a-obs').value='';
-  document.getElementById('a-level').value=sugg;
-  document.getElementById('m-add-title').textContent=parent?'Adicionar Filho':'Adicionar Raiz';
-  document.getElementById('m-add-sub').textContent=parent?'Pai: '+buildCode(parent)+' — '+parent.name:'Novo nó raiz da árvore';
-  openM('m-add');
-  setTimeout(()=>document.getElementById('a-code').focus(),80);
+// ─── ADD / EDIT / DELETE ──────────────────────────────────────────
+let addParentId = null;
+
+function openAddModal(parentId) {
+  addParentId = parentId;
+  const parent = parentId ? findNode(parentId) : null;
+  const sugg = parent ? Math.min(parent.level+1, 8) : 1;
+  document.getElementById('add-code').value = '';
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-obs').value = '';
+  document.getElementById('add-level').value = sugg;
+  document.getElementById('modal-add-title').textContent = parent ? 'Adicionar Filho' : 'Adicionar Raiz';
+  document.getElementById('modal-add-sub').textContent = parent
+    ? 'Pai: ' + buildCode(parent) + ' — ' + parent.name
+    : 'Novo nó raiz da árvore';
+  openModal('modal-add');
+  setTimeout(()=>document.getElementById('add-code').focus(),100);
 }
 
-function confirmAdd(){
-  const code=document.getElementById('a-code').value.trim();
-  const name=document.getElementById('a-name').value.trim();
-  const level=parseInt(document.getElementById('a-level').value);
-  const obs=document.getElementById('a-obs').value.trim();
-  if(!code||!name){toast('Preencha código e descrição','err');return;}
-  const node=makeNode(code,name,level,addParentId,obs);
-  if(addParentId){const p=find(addParentId);if(p){p.children.push(node);p.expanded=true;}}
-  else tree.push(node);
-  closeM('m-add');
+async function confirmAdd() {
+  const code = document.getElementById('add-code').value.trim();
+  const name = document.getElementById('add-name').value.trim();
+  const level = parseInt(document.getElementById('add-level').value);
+  const obs = document.getElementById('add-obs').value.trim();
+  if (!code || !name) { alert('Preencha o código e a descrição.'); return; }
+  setSyncStatus('syncing');
+  const row = await insertNodeDB(code, name, level, addParentId, obs);
+  closeModal('modal-add');
+  if (!row) return;
+  const node = {id:row.id, code:row.code, name:row.name, level:row.level, parentId:row.parent_id, obs:row.obs||'', expanded:true, children:[]};
+  if (addParentId) {
+    const parent = findNode(addParentId);
+    if (parent) { parent.children.push(node); parent.expanded=true; }
+  } else {
+    tree.push(node);
+  }
   selectNode(node.id);
-  localSave();
-  setSyncStatus('warn','Não salvo no SP');
+  showToast('Adicionado e sincronizado');
 }
 
-function openEdit(){
-  if(!selId)return;
-  const n=find(selId);if(!n)return;
-  document.getElementById('e-code').value=n.code;
-  document.getElementById('e-name').value=n.name;
-  document.getElementById('e-level').value=n.level;
-  document.getElementById('e-obs').value=n.obs||'';
-  document.getElementById('e-code-sub').textContent=buildCode(n);
-  openM('m-edit');
-  setTimeout(()=>document.getElementById('e-name').focus(),80);
+function openEditModal() {
+  if (!selectedId) return;
+  const n = findNode(selectedId);
+  if (!n) return;
+  document.getElementById('edit-code').value = n.code;
+  document.getElementById('edit-name').value = n.name;
+  document.getElementById('edit-level').value = n.level;
+  document.getElementById('edit-obs').value = n.obs||'';
+  document.getElementById('edit-full-code').textContent = buildCode(n);
+  openModal('modal-edit');
+  setTimeout(()=>document.getElementById('edit-name').focus(),100);
 }
 
-function confirmEdit(){
-  const n=find(selId);if(!n)return;
-  n.code=document.getElementById('e-code').value.trim().toUpperCase();
-  n.name=document.getElementById('e-name').value.trim();
-  n.level=parseInt(document.getElementById('e-level').value);
-  n.obs=document.getElementById('e-obs').value.trim();
-  closeM('m-edit');
-  renderAll();renderNodePanel(n);
-  localSave();setSyncStatus('warn','Não salvo no SP');
+async function confirmEdit() {
+  const n = findNode(selectedId);
+  if (!n) return;
+  const code = document.getElementById('edit-code').value.trim().toUpperCase();
+  const name = document.getElementById('edit-name').value.trim();
+  const level = parseInt(document.getElementById('edit-level').value);
+  const obs = document.getElementById('edit-obs').value.trim();
+  setSyncStatus('syncing');
+  const row = await updateNodeDB(n.id, {code, name, level, obs});
+  closeModal('modal-edit');
+  if (!row) return;
+  n.code = row.code; n.name = row.name; n.level = row.level; n.obs = row.obs||'';
+  renderAll();
+  renderNodePanel(n);
+  showToast('Salvo e sincronizado');
 }
 
-function delSel(){
-  if(!selId)return;
-  const n=find(selId);if(!n)return;
-  const msg=n.children.length>0
-    ?`Excluir "${n.name}" e seus ${n.children.length} filho(s)?`
-    :`Excluir "${n.name}"?`;
-  if(!confirm(msg))return;
-  del(selId);selId=null;
-  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
-  document.getElementById('node-panel').innerHTML='<div class="np-empty">Selecione um nó<br>para ver detalhes</div>';
-  renderAll();localSave();setSyncStatus('warn','Não salvo no SP');
+async function deleteSelected() {
+  if (!selectedId) return;
+  const n = findNode(selectedId);
+  if (!n) return;
+  const msg = n.children.length>0
+    ? `Excluir "${n.name}" e seus ${n.children.length} filho(s)? Isso removerá toda a subárvore para todo o time.`
+    : `Excluir "${n.name}" para todo o time?`;
+  if (!confirm(msg)) return;
+  setSyncStatus('syncing');
+  const ok = await deleteNodeDB(selectedId); // cascade no banco remove os filhos também
+  if (!ok) return;
+  deleteNode(selectedId);
+  selectedId = null;
+  ['btn-add-child','btn-edit','btn-del'].forEach(b => document.getElementById(b).disabled=true);
+  document.getElementById('node-panel').innerHTML='<div class="node-panel-empty">Selecione um nó<br>para ver detalhes</div>';
+  renderAll();
+  showToast('Excluído e sincronizado');
 }
 
-// ── EXPAND / COLLAPSE ──────────────────────────────────────────────────
-function setExp(nodes,v){nodes.forEach(n=>{n.expanded=v;setExp(n.children,v);});}
-function expAll(){setExp(tree,true);renderAll();}
-function colAll(){setExp(tree,false);renderAll();}
-function expTo(max,nodes=tree){nodes.forEach(n=>{n.expanded=n.level<max;expTo(max,n.children);});renderAll();}
+// ─── EXPAND / COLLAPSE ────────────────────────────────────────────
+function setExpanded(nodes, val) {
+  nodes.forEach(n => { n.expanded=val; setExpanded(n.children,val); });
+}
+function expandAll() { setExpanded(tree,true); renderAll(); }
+function collapseAll() { setExpanded(tree,false); renderAll(); }
+function expandToLevel(maxLevel, nodes=tree, currentLevel=1) {
+  nodes.forEach(n => {
+    n.expanded = n.level < maxLevel;
+    expandToLevel(maxLevel, n.children, currentLevel+1);
+  });
+  renderAll();
+}
 
-// ── SEARCH ────────────────────────────────────────────────────────────
-function doSearch(v){
-  searchTerm=v.toLowerCase().trim();
-  if(searchTerm){
-    function vis(nodes){let f=false;nodes.forEach(n=>{const m=n.name.toLowerCase().includes(searchTerm)||buildCode(n).toLowerCase().includes(searchTerm);const cf=vis(n.children);if(m||cf){n.expanded=true;f=true;}});return f;}
-    vis(tree);
+// ─── SEARCH ──────────────────────────────────────────────────────
+function doSearch(val) {
+  searchTerm = val.toLowerCase().trim();
+  if (searchTerm) {
+    function ensureVisible(nodes) {
+      let found=false;
+      nodes.forEach(n=>{
+        const m = n.name.toLowerCase().includes(searchTerm)||buildCode(n).toLowerCase().includes(searchTerm);
+        const childFound = ensureVisible(n.children);
+        if (m||childFound) { n.expanded=true; found=true; }
+      });
+      return found;
+    }
+    ensureVisible(tree);
   }
   renderAll();
 }
 
-// ── EXPORT ────────────────────────────────────────────────────────────
-function setFmt(f){
-  expFmt=f;
-  ['sap','csv','txt'].forEach(x=>{
-    const b=document.getElementById('fmt-'+x);
-    b.style.borderColor=x===f?'var(--accent)':'var(--border)';
-    b.style.color=x===f?'var(--accent)':'var(--text)';
+// ─── EXPORT ──────────────────────────────────────────────────────
+function setExportFormat(fmt) {
+  exportFormat = fmt;
+  ['sap','csv','indent'].forEach(f => {
+    const btn = document.getElementById('fmt-'+f);
+    btn.style.borderColor = f===fmt ? 'var(--accent)' : 'var(--border)';
+    btn.style.color = f===fmt ? 'var(--accent)' : 'var(--text)';
   });
-  renderExp();
+  renderExport();
 }
 
-function renderExp(){
-  const lines=[];
-  function walk(nodes){
-    nodes.forEach(n=>{
-      const fc=buildCode(n);
-      const ind='    '.repeat(n.level-1);
-      if(expFmt==='sap') lines.push(ind+fc+'\t\t'+n.name);
-      else if(expFmt==='csv') lines.push([fc,n.name,'N'+n.level,LEVELS.find(l=>l.n===n.level)?.name||'',n.obs||''].join(';'));
-      else lines.push('│  '.repeat(Math.max(n.level-2,0))+(n.level>1?'├─ ':'')+n.name+' ['+fc+']');
+function renderExport() {
+  const lines = [];
+  function walk(nodes) {
+    nodes.forEach(n => {
+      const fc = buildCode(n);
+      const indent = '    '.repeat(n.level-1);
+      if (exportFormat==='sap') {
+        lines.push(indent + fc + '\t\t' + n.name);
+      } else if (exportFormat==='csv') {
+        lines.push([fc, n.name, 'N'+n.level, LEVELS.find(l=>l.n===n.level)?.name||'', n.obs||''].join(';'));
+      } else {
+        const prefix = '│  '.repeat(Math.max(n.level-2,0)) + (n.level>1?'├─ ':'');
+        lines.push(prefix + n.name + ' [' + fc + ']');
+      }
       walk(n.children);
     });
   }
-  if(expFmt==='csv') lines.unshift('Código;Descrição;Nível;Tipo;Observação');
+  if (exportFormat==='csv') lines.unshift('Código;Descrição;Nível;Tipo;Observação');
   walk(tree);
-  document.getElementById('exp-content').textContent=lines.join('\n')||'(árvore vazia)';
+  document.getElementById('export-content').textContent = lines.join('\n')||'(árvore vazia)';
 }
 
-function showExport(){renderExp();openM('m-export');}
-function copyExp(){
-  navigator.clipboard.writeText(document.getElementById('exp-content').textContent)
-    .then(()=>toast('Copiado!','ok')).catch(()=>toast('Selecione e copie manualmente','warn'));
+function showExport() {
+  renderExport();
+  openModal('modal-export');
 }
 
-function exportJSON(){
-  const blob=new Blob([JSON.stringify({tree,nextId},null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='arvore_pcm_'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();toast('JSON salvo!','ok');
+function copyExport() {
+  const txt = document.getElementById('export-content').textContent;
+  navigator.clipboard.writeText(txt)
+    .then(()=>showToast('Copiado para a área de transferência!'))
+    .catch(()=>showToast('Selecione o texto e copie manualmente'));
 }
 
-function openImport(){document.getElementById('imp-json').value='';openM('m-import');}
-function confirmImport(){
-  try{
-    const raw=document.getElementById('imp-json').value.trim();
-    const p=JSON.parse(raw);
-    if(p.tree&&Array.isArray(p.tree)){tree=p.tree;nextId=p.nextId||1;}
-    else if(Array.isArray(p)){tree=p;}
+// ─── JSON IMPORT/EXPORT ──────────────────────────────────────────
+function exportJSON() {
+  const data = JSON.stringify({tree}, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'arvore_ativos_pcm_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('Arquivo JSON salvo!');
+}
+
+function importFromJSON() {
+  document.getElementById('import-json').value='';
+  openModal('modal-import');
+}
+
+// Remove ids antigos (podem ser de outro banco/sessão) e gera ids temporários locais,
+// preservando a hierarquia via novos parentId provisórios.
+function stripIdsAssignTemp(nodes, parentTempId=null) {
+  return nodes.map(n => {
+    const tempId = tempIdCounter--;
+    const node = {id:tempId, code:n.code, name:n.name, level:n.level, parentId:parentTempId, obs:n.obs||'', expanded:true, children:[]};
+    node.children = stripIdsAssignTemp(n.children||[], tempId);
+    return node;
+  });
+}
+
+async function confirmImport() {
+  try {
+    const raw = document.getElementById('import-json').value.trim();
+    const parsed = JSON.parse(raw);
+    let importedTree;
+    if (parsed.tree && Array.isArray(parsed.tree)) importedTree = parsed.tree;
+    else if (Array.isArray(parsed)) importedTree = parsed;
     else throw new Error('Formato inválido');
-    closeM('m-import');selId=null;renderAll();localSave();
-    setSyncStatus('warn','Não salvo no SP');
-    toast('Importado!','ok');
-  }catch(e){alert('Erro: '+e.message);}
+
+    tempIdCounter = -1;
+    const localTree = stripIdsAssignTemp(importedTree);
+
+    closeModal('modal-import');
+    selectedId = null;
+    setSyncStatus('syncing');
+    showToast('Substituindo árvore do time — gravando…');
+    const ok = await clearAllDB();
+    if (!ok) return;
+    const idMap = await persistTreeToDB(localTree);
+    reindexIds(localTree, idMap);
+    tree = localTree;
+    renderAll();
+    showToast('Importado e sincronizado com o time!');
+  } catch(e) {
+    alert('Erro ao importar: ' + e.message);
+  }
 }
 
-// ── CLEAR / EXAMPLE ───────────────────────────────────────────────────
-function clearAll(){
-  if(!confirm('Apagar toda a árvore local?'))return;
-  tree=[];nextId=1;selId=null;renderAll();localSave();
-  setSyncStatus('warn','Não salvo no SP');
+// ─── CLEAR / RESET ────────────────────────────────────────────────
+async function clearAllDB() {
+  const { error } = await sb.from(TABLE).delete().gte('id', 0);
+  if (error) { setSyncStatus('error'); alert('Erro ao limpar no banco: ' + error.message); return false; }
+  return true;
 }
 
-function loadExample(){
-  if(tree.length>0&&!confirm('Substituir pela estrutura exemplo da Planta 5010?'))return;
-  tree=[];nextId=1;selId=null;
-  const pl=makeNode('PL5010','O-I RIO DE JANEIRO GC',1); tree.push(pl);
-  const prod=makeNode('PROD','Produção',2,pl.id); pl.children.push(prod);
-  const mix=makeNode('MIX','Casa de Mistura',3,prod.id); prod.children.push(mix);
-  const forn=makeNode('FOR','Fornos',3,prod.id); prod.children.push(forn);
-  const fab=makeNode('FAB','Fabricação',3,prod.id); prod.children.push(fab);
-  const dec=makeNode('DEC','Decoração',3,prod.id); prod.children.push(dec);
-  ['L91','L92','L93'].forEach((lc,li)=>{
-    const ln=makeNode(lc,'Linha '+lc.slice(1),4,fab.id); fab.children.push(ln);
-    const zq=makeNode('ZQ','Zona Quente',5,ln.id); ln.children.push(zq);
-    const zf=makeNode('ZF','Zona Fria',5,ln.id); ln.children.push(zf);
-    const mf=makeNode('MAQFORM','Máquinas de Formação',6,zq.id); zq.children.push(mf);
-    ['01','02','03'].forEach(n=>{mf.children.push(makeNode('MF-'+lc.slice(1)+'-'+n,'Máquina Formação '+n,7,mf.id));});
-    const rc=makeNode('REC','Recozimento / Lehr',6,zq.id); zq.children.push(rc);
-    rc.children.push(makeNode('LEHR-'+lc.slice(1)+'-01','Lehr '+lc.slice(1)+'-01',7,rc.id));
-    const tr=makeNode('TRAN','Transportadores',6,zf.id); zf.children.push(tr);
-    ['01','02'].forEach(n=>{tr.children.push(makeNode('TRAN-'+lc.slice(1)+'-'+n,'Transportador '+n,7,tr.id));});
-    const ins=makeNode('INSP','Inspetores',6,zf.id); zf.children.push(ins);
-    ['FPX2-01','ICK-01','ART-01'].forEach(n=>{ins.children.push(makeNode(n,'Inspetor '+n,7,ins.id));});
-    const pal=makeNode('PAL','Paletização',6,zf.id); zf.children.push(pal);
-    ['01','02'].forEach(n=>{pal.children.push(makeNode('PAL-'+lc.slice(1)+'-'+n,'Paletizadora '+n,7,pal.id));});
+async function clearAll() {
+  if (!confirm('Apagar toda a árvore para TODO O TIME? Esta ação não pode ser desfeita.')) return;
+  setSyncStatus('syncing');
+  const ok = await clearAllDB();
+  if (!ok) return;
+  tree=[];selectedId=null;
+  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
+  renderAll();
+  showToast('Árvore apagada para todo o time');
+}
+
+// Insere uma sub-árvore local (client-side, com ids provisórios) no banco,
+// respeitando a ordem pai→filho, e devolve a árvore já com ids reais do Supabase.
+async function persistTreeToDB(localTree) {
+  const idMap = {};
+  async function walk(nodes, parentRealId) {
+    for (const n of nodes) {
+      const row = await insertNodeDB(n.code, n.name, n.level, parentRealId, n.obs||'');
+      if (!row) throw new Error('Falha ao inserir ' + n.code);
+      idMap[n.id] = row.id;
+      n.realId = row.id;
+      if (n.children && n.children.length) await walk(n.children, row.id);
+    }
+  }
+  await walk(localTree, null);
+  return idMap;
+}
+
+function reindexIds(nodes, idMap) {
+  nodes.forEach(n => {
+    n.id = idMap[n.id] ?? n.id;
+    n.parentId = n.parentId!=null ? (idMap[n.parentId] ?? n.parentId) : null;
+    reindexIds(n.children, idMap);
   });
-  ['L92','L93'].forEach((lc,li)=>{
-    const ln=makeNode(lc,'Decoração '+lc.slice(1),4,dec.id); dec.children.push(ln);
-    const zf=makeNode('ZF','Zona Fria',5,ln.id); ln.children.push(zf);
-    const dp=makeNode('DESPAL','Despaletização',6,zf.id); zf.children.push(dp);
-    dp.children.push(makeNode('TRAN-DEC-'+String(li*10+1).padStart(2,'0'),'Transportador DEC',7,dp.id));
-    const sg=makeNode('SERIG','Serigrafia',6,zf.id); zf.children.push(sg);
-    ['01','02'].forEach(n=>{sg.children.push(makeNode('STRUTZ-'+String(li*2+parseInt(n)).padStart(2,'0'),'Strutz '+String(li*2+parseInt(n)).padStart(2,'0'),7,sg.id));});
-    const rd=makeNode('REC','Recozimento',6,zf.id); zf.children.push(rd);
-    rd.children.push(makeNode('LEHR-DEC-0'+(li+1),'Lehr DEC 0'+(li+1),7,rd.id));
-    const pd=makeNode('PAL','Paletização',6,zf.id); zf.children.push(pd);
-    pd.children.push(makeNode('PAL-DEC-0'+(li+1),'Paletizadora DEC',7,pd.id));
-    pd.children.push(makeNode('ENV-DEC-0'+(li+1),'Envolvedora DEC',7,pd.id));
-  });
-  const ut=makeNode('UTIL','Utilidades',2,pl.id); pl.children.push(ut);
-  [['ELE','Energia Elétrica'],['COMP','Ar Comprimido'],['REFR','Refrigeração'],['VPR','Vapor'],['AGUA','Tratamento de Água']].forEach(([c,n])=>{ut.children.push(makeNode(c,n,3,ut.id));});
-  const adm=makeNode('ADM','Administração',2,pl.id); pl.children.push(adm);
-  const log=makeNode('LOG','Logística',2,pl.id); pl.children.push(log);
-  renderAll();localSave();setSyncStatus('warn','Não salvo no SP');
-  toast('Estrutura exemplo carregada!','ok');
 }
 
-// ── LEGEND ────────────────────────────────────────────────────────────
-function buildLegend(){
-  const el=document.getElementById('level-legend');
+async function resetToDefault() {
+  if (tree.length>0 && !confirm('Substituir a árvore atual (de TODO O TIME) pelo exemplo da Planta 5010?')) return;
+  setSyncStatus('syncing');
+  const ok = await clearAllDB();
+  if (!ok) return;
+  tree=[]; selectedId=null;
+  tempIdCounter = -1;
+
+  const pl = makeNode('PL5010','O-I RIO DE JANEIRO GC',1);
+  tree.push(pl);
+
+  // PRODUÇÃO
+  const prod = makeNode('PROD','Produção',2,pl.id); pl.children.push(prod);
+  const mix = makeNode('MIX','Casa de Mistura',3,prod.id); prod.children.push(mix);
+  const forn = makeNode('FOR','Fornos',3,prod.id); prod.children.push(forn);
+  const fab = makeNode('FAB','Fabricação',3,prod.id); prod.children.push(fab);
+  const dec = makeNode('DEC','Decoração',3,prod.id); prod.children.push(dec);
+
+  // FAB – Linhas
+  ['L91','L92','L93'].forEach((lcode,li)=>{
+    const ln = makeNode(lcode,'Linha '+lcode.slice(1),4,fab.id); fab.children.push(ln);
+    const zq = makeNode('ZQ','Zona Quente',5,ln.id); ln.children.push(zq);
+    const zf = makeNode('ZF','Zona Fria',5,ln.id); ln.children.push(zf);
+    const maqf = makeNode('MAQFORM','Máquinas de Formação',6,zq.id); zq.children.push(maqf);
+    ['01','02','03'].forEach(n=>{ const m=makeNode('MF-'+lcode.slice(1)+'-'+n,'Máquina de Formação '+n,7,maqf.id); maqf.children.push(m); });
+    const rec = makeNode('REC','Recozimento (Lehr)',6,zq.id); zq.children.push(rec);
+    [lcode.slice(1)+'-01'].forEach(n=>{ const r=makeNode('LEHR-'+n,'Lehr '+n,7,rec.id); rec.children.push(r); });
+    const tran = makeNode('TRAN','Transportadores',6,zf.id); zf.children.push(tran);
+    ['01','02'].forEach(n=>{ const t=makeNode('TRAN-'+lcode.slice(1)+'-'+n,'Transportador '+n,7,tran.id); tran.children.push(t); });
+    const insp = makeNode('INSP','Máquinas de Inspeção',6,zf.id); zf.children.push(insp);
+    ['FPX2-01','FPX2-02','ICK-01','ICK-02','ART-01'].forEach(n=>{ const i=makeNode(n,'Inspetor '+n,7,insp.id); insp.children.push(i); });
+    const pal = makeNode('PAL','Paletização',6,zf.id); zf.children.push(pal);
+    ['01','02'].forEach(n=>{ const p=makeNode('PAL-'+lcode.slice(1)+'-'+n,'Paletizadora '+n,7,pal.id); pal.children.push(p); });
+  });
+
+  // DEC – Linhas
+  ['L92','L93'].forEach((lcode,li)=>{
+    const ln = makeNode(lcode,'Decoração Linha '+lcode.slice(1),4,dec.id); dec.children.push(ln);
+    const zf = makeNode('ZF','Zona Fria',5,ln.id); ln.children.push(zf);
+    const despal = makeNode('DESPAL','Despaletização',6,zf.id); zf.children.push(despal);
+    ['01','02'].forEach(n=>{ const t=makeNode('TRAN-DEC-'+n,'Transportador DEC '+n,7,despal.id); despal.children.push(t); });
+    const serig = makeNode('SERIG','Serigrafia',6,zf.id); zf.children.push(serig);
+    ['01','02'].forEach(n=>{ const s=makeNode('STRUTZ-'+String(li*2+parseInt(n)).padStart(2,'0'),'Strutz '+(li*2+parseInt(n)).toString().padStart(2,'0'),7,serig.id); serig.children.push(s); });
+    const recd = makeNode('REC','Recozimento',6,zf.id); zf.children.push(recd);
+    const rd=makeNode('REC-DEC-0'+(li+1),'Lehr DEC 0'+(li+1),7,recd.id); recd.children.push(rd);
+    const tranD = makeNode('TRAN','Transportadores',6,zf.id); zf.children.push(tranD);
+    const td=makeNode('TRAN-DEC-'+(li===0?'10':'20'),'Transportador DEC '+(li===0?'10':'20'),7,tranD.id); tranD.children.push(td);
+    const palD = makeNode('PAL','Paletização',6,zf.id); zf.children.push(palD);
+    const pd=makeNode('PAL-DEC-0'+(li+1),'Paletizadora DEC 0'+(li+1),7,palD.id); palD.children.push(pd);
+    const ev=makeNode('ENV-DEC-0'+(li+1),'Envolvedora DEC 0'+(li+1),7,palD.id); palD.children.push(ev);
+  });
+
+  // UTILIDADES
+  const util = makeNode('UTIL','Utilidades',2,pl.id); pl.children.push(util);
+  [
+    ['ELE','Energia Elétrica'],['COMP','Ar Comprimido'],['REFR','Refrigeração'],
+    ['VPR','Vapor'],['AGUA','Tratamento de Água'],['ETA','ETA / ETE']
+  ].forEach(([c,n])=>{ const u=makeNode(c,n,3,util.id); util.children.push(u); });
+
+  // ADMINISTRAÇÃO
+  const adm = makeNode('ADM','Administração',2,pl.id); pl.children.push(adm);
+  [['PRE','Prédios Administrativos'],['ITC','Tecnologia da Informação'],['AMB','Ambulatório'],['REF','Refeitório']].forEach(([c,n])=>{
+    const a=makeNode(c,n,3,adm.id); adm.children.push(a);
+  });
+
+  // LOGÍSTICA
+  const log = makeNode('LOG','Logística',2,pl.id); pl.children.push(log);
+  [['GAP','Galpões'],['EXP','Expedição'],['REC','Recebimento']].forEach(([c,n])=>{
+    const l=makeNode(c,n,3,log.id); log.children.push(l);
+  });
+
+  ['btn-add-child','btn-edit','btn-del'].forEach(b=>document.getElementById(b).disabled=true);
+  renderAll();
+  showToast('Gravando exemplo no banco compartilhado…');
+  try {
+    const idMap = await persistTreeToDB(tree);
+    reindexIds(tree, idMap);
+    renderAll();
+    showToast('Estrutura exemplo da Planta 5010 sincronizada com o time!');
+  } catch(e) {
+    alert('Erro ao gravar a estrutura exemplo: ' + e.message);
+  }
+}
+
+// ─── MODAL HELPERS ────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); modalOpenCount++; }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  modalOpenCount = Math.max(0, modalOpenCount-1);
+  if (modalOpenCount===0 && pendingRemoteRefresh) { pendingRemoteRefresh=false; refreshFromRemote(); }
+}
+
+// Close on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(mo=>{
+  mo.addEventListener('click', e=>{ if(e.target===mo) mo.classList.remove('open'); });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+  if ((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); save(); }
+  if (e.key==='F2' && selectedId) openEditModal();
+  if (e.key==='Delete' && selectedId && !document.querySelector('.modal-overlay.open')) deleteSelected();
+  if (e.key==='Insert' && !document.querySelector('.modal-overlay.open')) openAddModal(selectedId);
+});
+
+// ─── LEGEND ──────────────────────────────────────────────────────
+function buildLegend() {
+  const el = document.getElementById('level-legend');
   LEVELS.forEach(l=>{
-    const item=document.createElement('div');item.className='level-item';
+    const item=document.createElement('div');
+    item.className='level-item';
     item.innerHTML=`<div class="level-dot" style="background:${l.color}"></div><span class="level-name">${l.name}</span><span class="level-n">N${l.n}</span>`;
-    item.onclick=()=>expTo(l.n+1);item.title='Expandir até N'+l.n;
+    item.onclick=()=>{ expandToLevel(l.n+1); };
+    item.title='Expandir até N'+l.n;
     el.appendChild(item);
   });
 }
 
-// ── MODAL ─────────────────────────────────────────────────────────────
-function openM(id){document.getElementById(id).classList.add('open');}
-function closeM(id){document.getElementById(id).classList.remove('open');}
-function showFlowGuide(){openM('m-guide');}
-document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
-
-// ── TOAST ─────────────────────────────────────────────────────────────
-let _tt;
-function toast(msg,type=''){
+// ─── TOAST ───────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
   const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast'+(type?' '+type:'')+' show';
-  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2000);
 }
 
-
-// ── DRAG & DROP ───────────────────────────────────────────────────────
-let dragSrcId=null, dragTargetId=null, dragMode=null;
-
-function clearDragStyles(){
-  document.querySelectorAll('.drag-over-child,.drag-over-before,.drag-over-after,.dragging')
-    .forEach(el=>el.classList.remove('drag-over-child','drag-over-before','drag-over-after','dragging'));
+// ─── AUTO SAVE ───────────────────────────────────────────────────
+let autoSaveTimer;
+function scheduleSave() {
+  setUnsaved(true);
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(save, 1500);
 }
 
-function isDescendant(potentialAncestorId, nodeId){
-  // Check if nodeId is inside potentialAncestorId's subtree
-  const anc=find(potentialAncestorId);
-  if(!anc) return false;
-  function check(nodes){
-    for(let n of nodes){
-      if(n.id===nodeId) return true;
-      if(check(n.children)) return true;
-    }
-    return false;
-  }
-  return check(anc.children);
+// ─── REALTIME (todo o time vê as mudanças uns dos outros) ─────────
+function setupRealtime() {
+  sb.channel('pcm_nodes_changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:TABLE}, (payload) => {
+      const rec = payload.new && Object.keys(payload.new).length ? payload.new : payload.old;
+      const who = rec && rec.updated_by;
+      const when = rec && rec.updated_at;
+      refreshFromRemote(who, when);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') setSyncStatus('ok');
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setSyncStatus('error');
+    });
 }
 
-function removeNodeFromParent(id){
-  // Removes node from wherever it is, returns the node
-  function rem(nodes){
-    for(let i=0;i<nodes.length;i++){
-      if(nodes[i].id===id){const n=nodes.splice(i,1)[0];return n;}
-      const found=rem(nodes[i].children);
-      if(found) return found;
-    }
-    return null;
-  }
-  return rem(tree);
-}
+// ─── SEED DATA (locais da planta) ─────────────────────────────────
+const SEED_NODES = [
+  {code:'PORT',name:'Portaria',level:2,parent_code:null,obs:''},
+  {code:'RECEP',name:'Recepção',level:3,parent_code:'PORT',obs:''},
+  {code:'SALAG4S',name:'Sala G4S',level:3,parent_code:'PORT',obs:''},
+  {code:'SALABAF',name:'Sala Bafômetro',level:3,parent_code:'PORT',obs:''},
+  {code:'SALAESPERA',name:'Sala de Espera',level:3,parent_code:'PORT',obs:''},
+  {code:'PRED',name:'Prédio Externo',level:2,parent_code:null,obs:''},
+  {code:'AMB',name:'Ambulatório',level:3,parent_code:'PRED',obs:''},
+  {code:'CONS1',name:'Consultório Dr Fabrício',level:4,parent_code:'AMB',obs:''},
+  {code:'SREUNAMB',name:'Sala de Reunião',level:4,parent_code:'AMB',obs:''},
+  {code:'CONS2',name:'Consultório Fonoaudiólogo',level:4,parent_code:'AMB',obs:''},
+  {code:'ARQAMB',name:'Arquivo Ambulatório',level:4,parent_code:'AMB',obs:''},
+  {code:'ALMAMB',name:'Almoxarifado Ambulatório',level:4,parent_code:'AMB',obs:''},
+  {code:'SATEND',name:'Sala de Atendimento',level:4,parent_code:'AMB',obs:''},
+  {code:'VESTAMB',name:'Vestiário Ambulatório',level:4,parent_code:'AMB',obs:''},
+  {code:'BANAMB',name:'Banheiro Ambulatório',level:4,parent_code:'AMB',obs:''},
+  {code:'SASGAMB',name:'Sala ASG',level:4,parent_code:'AMB',obs:''},
+  {code:'COPAAMB',name:'Copa Ambulatório',level:4,parent_code:'AMB',obs:''},
+  {code:'ANTIGORH',name:'Antigo RH',level:3,parent_code:'PRED',obs:'Desativado'},
+  {code:'BRADESCO',name:'Banco Bradesco',level:3,parent_code:'PRED',obs:''},
+  {code:'HOSPEDES',name:'Casa de Hóspedes',level:2,parent_code:null,obs:'Desativado'},
+  {code:'QUARTOS',name:'7 Quartos',level:3,parent_code:'HOSPEDES',obs:''},
+  {code:'GERENCIA',name:'Gerência',level:2,parent_code:null,obs:''},
+  {code:'ANEXOFAC',name:'Anexo Facilities',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'SALAFAC',name:'Sala Facilities',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'ENGMEET',name:'Engineering Meeting Room',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'MGMTMEET',name:'Management Meeting',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'POGMEET',name:'Power of Glass Meeting Room',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'VIDMEET',name:'Video Conference/Meeting Room',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'SALAENG',name:'Sala Engenharia',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'TI',name:'TI',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'ANEX4',name:'Anexo 4',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'ANEX3',name:'Anexo 3 - Broadcast TI',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'ANEX2',name:'Anexo 2 - Eleve',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'RHGER',name:'RH',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'SRRH',name:'Sala de Reunião RH',level:4,parent_code:'RHGER',obs:''},
+  {code:'STRH',name:'Sala de Treinamento',level:4,parent_code:'RHGER',obs:''},
+  {code:'EHSGER',name:'EHS',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'SREHS',name:'Sala Reunião EHS',level:4,parent_code:'EHSGER',obs:''},
+  {code:'SALAGER',name:'Sala Gerência',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'SALAGERPL',name:'Sala Gerente Planta',level:4,parent_code:'SALAGER',obs:''},
+  {code:'CPD',name:'Sala Servidor',level:3,parent_code:'GERENCIA',obs:''},
+  {code:'CONV',name:'Área de Convivência',level:2,parent_code:null,obs:''},
+  {code:'SALEST',name:'Sala de Estudos',level:3,parent_code:'CONV',obs:''},
+  {code:'REF',name:'Refeitório',level:2,parent_code:null,obs:''},
+  {code:'ESTREF',name:'Estoque',level:3,parent_code:'REF',obs:''},
+  {code:'MARG',name:'Margarefe',level:3,parent_code:'REF',obs:''},
+  {code:'SALADA',name:'Salada',level:3,parent_code:'REF',obs:''},
+  {code:'SALANU',name:'Sala Nutricionista',level:3,parent_code:'REF',obs:''},
+  {code:'APANELA',name:'Área de Panela',level:3,parent_code:'REF',obs:''},
+  {code:'ACACC',name:'Área de Cocção',level:3,parent_code:'REF',obs:''},
+  {code:'ADEVOL',name:'Área de Devolução',level:3,parent_code:'REF',obs:''},
+  {code:'AUTEN',name:'Área de Utensílios/Descartáveis',level:3,parent_code:'REF',obs:''},
+  {code:'ARECEB',name:'Área de Recebimento',level:3,parent_code:'REF',obs:''},
+  {code:'BANFEMREF',name:'Banheiro Feminino',level:3,parent_code:'REF',obs:''},
+  {code:'BANMASREF',name:'Banheiro Masculino',level:3,parent_code:'REF',obs:''},
+  {code:'CAMARAS',name:'2 Câmaras Frias',level:3,parent_code:'REF',obs:''},
+  {code:'REFRIGREF',name:'Refrigeração Refeitório',level:3,parent_code:'REF',obs:''},
+  {code:'BYD',name:'BYD',level:3,parent_code:'LOG',obs:''},
+  {code:'BYDCARREG',name:'BYD Carregamento',level:4,parent_code:'BYD',obs:''},
+  {code:'BYDMANUT',name:'BYD Manutenção',level:4,parent_code:'BYD',obs:''},
+  {code:'BYDLAV',name:'BYD Lavagem',level:4,parent_code:'BYD',obs:''},
+  {code:'BYDPNEU',name:'BYD Armazenamento Pneu',level:4,parent_code:'BYD',obs:''},
+  {code:'RUAS',name:'Ruas Internas',level:3,parent_code:'LOG',obs:''},
+  {code:'RUAI',name:'Rua I',level:4,parent_code:'RUAS',obs:''},
+  {code:'RUAH',name:'Rua H',level:4,parent_code:'RUAS',obs:''},
+  {code:'RUAG',name:'Rua G',level:4,parent_code:'RUAS',obs:''},
+  {code:'RUAF',name:'Rua F',level:4,parent_code:'RUAS',obs:''},
+  {code:'RUAE',name:'Rua E',level:4,parent_code:'RUAS',obs:''},
+  {code:'RUAD',name:'Rua D',level:4,parent_code:'RUAS',obs:''},
+  {code:'LOGER',name:'Loger (Contêiner)',level:3,parent_code:'LOG',obs:''},
+  {code:'SOLNAS',name:'Sala Sol Nascente',level:2,parent_code:null,obs:''},
+  {code:'SALAGSC',name:'Sala GSC',level:2,parent_code:null,obs:''},
+  {code:'ACETIL',name:'Área Acetileno',level:2,parent_code:null,obs:''},
+  {code:'DEC',name:'Decoração',level:2,parent_code:null,obs:''},
+  {code:'CZF',name:'Central Zona Fria',level:2,parent_code:null,obs:''},
+  {code:'BANFEMCZF',name:'Banheiro Feminino',level:3,parent_code:'CZF',obs:''},
+  {code:'BANMASCZF',name:'Banheiro Masculino',level:3,parent_code:'CZF',obs:''},
+  {code:'SALAQUAL',name:'Sala Qualidade',level:3,parent_code:'CZF',obs:''},
+  {code:'SALAMANUT',name:'Sala Manutenção',level:3,parent_code:'CZF',obs:''},
+  {code:'CANTINA',name:'Cantina',level:2,parent_code:null,obs:''},
+  {code:'VESTTEC',name:'Vestiário Terceiro',level:2,parent_code:null,obs:''},
+  {code:'ALMOXA',name:'Almoxarifado',level:2,parent_code:null,obs:''},
+  {code:'SCOORPROD',name:'Sala Coordenação',level:3,parent_code:'PROD',obs:''},
+  {code:'MUDANCA',name:'Mudança',level:3,parent_code:'PROD',obs:''},
+  {code:'INSPAUT',name:'Inspeção Automática',level:3,parent_code:'PROD',obs:''},
+  {code:'LABQUAL',name:'Laboratório Qualidade',level:3,parent_code:'PROD',obs:''},
+  {code:'SSUPER',name:'Sala Supervisão',level:3,parent_code:'PROD',obs:''},
+];
 
-function performDrop(srcId, targetId, mode){
-  if(!srcId||!targetId||srcId===targetId) return;
-  // Prevent dropping a node into its own descendant
-  if(isDescendant(srcId, targetId)){
-    toast('Não é possível mover um nó para dentro de si mesmo','err');
-    return;
+async function loadSeedData() {
+  if (!confirm('Isso vai adicionar os locais da planta que ainda não existem no banco. Continuar?')) return;
+  setSyncStatus('syncing');
+  const { data: existing } = await sb.from(TABLE).select('id,code');
+  const codeToId = {};
+  (existing || []).forEach(r => { codeToId[r.code] = r.id; });
+  const who = getUserName() || 'Sistema';
+  let added = 0;
+  for (const node of SEED_NODES) {
+    if (codeToId[node.code]) continue;
+    const parentId = node.parent_code ? (codeToId[node.parent_code] || null) : null;
+    const { data, error } = await sb.from(TABLE).insert({
+      code: node.code, name: node.name, level: node.level,
+      parent_id: parentId, obs: node.obs, updated_by: who
+    }).select('id,code').single();
+    if (!error && data) { codeToId[data.code] = data.id; added++; }
   }
-  const srcNode=removeNodeFromParent(srcId);
-  if(!srcNode){toast('Erro ao mover nó','err');return;}
-
-  if(mode==='child'){
-    // Drop as last child of target
-    const target=find(targetId);
-    if(!target){tree.push(srcNode);renderAll();return;}
-    srcNode.parentId=target.id;
-    // Auto-adjust level suggestion
-    if(srcNode.level<=target.level) srcNode.level=Math.min(target.level+1,8);
-    target.children.push(srcNode);
-    target.expanded=true;
-  } else {
-    // Drop before or after target — same parent
-    function insertNear(nodes){
-      for(let i=0;i<nodes.length;i++){
-        if(nodes[i].id===targetId){
-          const parentId=nodes[i].parentId||null;
-          srcNode.parentId=parentId;
-          srcNode.level=nodes[i].level;
-          const idx=mode==='before'?i:i+1;
-          nodes.splice(idx,0,srcNode);
-          return true;
-        }
-        if(insertNear(nodes[i].children)) return true;
-      }
-      return false;
-    }
-    if(!insertNear(tree)) tree.push(srcNode);
-  }
-
+  showToast(added + ' locais adicionados!');
+  await load();
   renderAll();
-  selectNode(srcNode.id);
-  localSave();
-  setSyncStatus('warn','Não salvo no SP');
-  toast('Nó movido! Lembre de salvar no SharePoint (Ctrl+S)','ok');
 }
 
-// ── KEYBOARD ──────────────────────────────────────────────────────────
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape') document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));
-  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();pushToSP();}
-  if(e.key==='F2'&&selId)openEdit();
-  if(e.key==='Delete'&&selId&&!document.querySelector('.modal-bg.open'))delSel();
-  if(e.key==='Insert'&&!document.querySelector('.modal-bg.open'))openAdd(selId);
-});
-['m-add','m-edit'].forEach(mid=>{
-  document.getElementById(mid).addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey&&e.target.tagName!=='TEXTAREA'){
-      mid==='m-add'?confirmAdd():confirmEdit();
+// ─── INIT ────────────────────────────────────────────────────────
+buildLegend();
+document.getElementById('user-badge-text').textContent = 'Você: ' + (getUserName() || '(clique p/ definir)');
+(async () => {
+  await load();
+  renderAll();
+  setupRealtime();
+  if (!getUserName()) setTimeout(promptUserName, 400);
+})();
+
+// Tip: press Enter to confirm modals
+['modal-add','modal-edit'].forEach(mid=>{
+  document.getElementById(mid).addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.shiftKey && e.target.tagName!=='TEXTAREA'){
+      mid==='modal-add'?confirmAdd():confirmEdit();
     }
   });
 });
