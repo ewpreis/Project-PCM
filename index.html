@@ -1007,21 +1007,27 @@ function renderNode(node, container, ancestors) {
   row.addEventListener('dragstart', e => {
     e.stopPropagation();
     dragState.srcId = node.id;
-    row.classList.add('dragging');
+    dragState.targetId = null;
+    dragState.mode = null;
+    setTimeout(() => row.classList.add('dragging'), 0);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', node.id);
+    e.dataTransfer.setData('text/plain', String(node.id));
   });
   row.addEventListener('dragend', () => {
     row.classList.remove('dragging');
     clearDragHighlights();
   });
   row.addEventListener('dragover', e => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     if (dragState.srcId === node.id) return;
-    clearDragHighlights();
+    document.querySelectorAll('.drag-over-child,.drag-over-before,.drag-over-after').forEach(el => {
+      if (el !== row) el.classList.remove('drag-over-child','drag-over-before','drag-over-after');
+    });
     const rect = row.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const h = rect.height;
+    row.classList.remove('drag-over-child','drag-over-before','drag-over-after');
     if (y < h * 0.25)      { row.classList.add('drag-over-before'); dragState.mode = 'before'; }
     else if (y > h * 0.75) { row.classList.add('drag-over-after');  dragState.mode = 'after'; }
     else                   { row.classList.add('drag-over-child');   dragState.mode = 'child'; }
@@ -1029,15 +1035,22 @@ function renderNode(node, container, ancestors) {
     e.dataTransfer.dropEffect = 'move';
   });
   row.addEventListener('dragleave', e => {
-    if (!row.contains(e.relatedTarget))
-      row.classList.remove('drag-over-child','drag-over-before','drag-over-after');
+    if (e.relatedTarget && row.contains(e.relatedTarget)) return;
+    row.classList.remove('drag-over-child','drag-over-before','drag-over-after');
   });
   row.addEventListener('drop', e => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
+    const src = dragState.srcId;
+    const tgt = dragState.targetId;
+    const mode = dragState.mode;
+    dragState.srcId = null;
+    dragState.targetId = null;
+    dragState.mode = null;
     clearDragHighlights();
-    if (dragState.srcId && dragState.targetId && dragState.srcId !== dragState.targetId)
-      performDrop(dragState.srcId, dragState.targetId, dragState.mode);
-    dragState.srcId = dragState.targetId = dragState.mode = null;
+    if (src && tgt && src !== tgt && mode) {
+      performDrop(src, tgt, mode);
+    }
   });
 
   // indent lines
