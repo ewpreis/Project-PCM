@@ -974,6 +974,95 @@ function maxDepth(nodes=tree, d=0) {
   return m;
 }
 
+// ─── DRAG & DROP ──────────────────────────────────────────────────
+const dragState = { srcId: null, targetId: null, mode: null };
+
+function clearDragHighlights() {
+  document.querySelectorAll('.drag-over-child,.drag-over-before,.drag-over-after,.dragging')
+    .forEach(el => el.classList.remove('drag-over-child','drag-over-before','drag-over-after','dragging'));
+}
+
+function isDescendantOf(ancestorId, nodeId) {
+  const anc = findNode(ancestorId);
+  if (!anc) return false;
+  function check(nodes) {
+    for (let n of nodes) {
+      if (n.id === nodeId) return true;
+      if (check(n.children)) return true;
+    }
+    return false;
+  }
+  return check(anc.children);
+}
+
+function removeFromParent(id) {
+  function rem(nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id === id) return nodes.splice(i, 1)[0];
+      const found = rem(nodes[i].children);
+      if (found) return found;
+    }
+    return null;
+  }
+  return rem(tree);
+}
+
+async function performDrop(srcId, targetId, mode) {
+  if (isDescendantOf(srcId, targetId)) {
+    showToast('Não é possível mover um nó para dentro de si mesmo');
+    return;
+  }
+  const srcNode = removeFromParent(srcId);
+  if (!srcNode) return;
+
+  let newParentId = null;
+  let newLevel = srcNode.level;
+
+  if (mode === 'child') {
+    const target = findNode(targetId);
+    if (!target) {
+      tree.push(srcNode);
+    } else {
+      srcNode.parentId = target.id;
+      newParentId = target.id;
+      newLevel = Math.min(target.level + 1, 8);
+      srcNode.level = newLevel;
+      target.children.push(srcNode);
+      target.expanded = true;
+    }
+  } else {
+    function insertNear(nodes) {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === targetId) {
+          newParentId = nodes[i].parentId || null;
+          newLevel = nodes[i].level;
+          srcNode.parentId = newParentId;
+          srcNode.level = newLevel;
+          nodes.splice(mode === 'before' ? i : i + 1, 0, srcNode);
+          return true;
+        }
+        if (insertNear(nodes[i].children)) return true;
+      }
+      return false;
+    }
+    if (!insertNear(tree)) tree.push(srcNode);
+  }
+
+  renderAll();
+  selectNode(srcNode.id);
+
+  // Persist move to Supabase
+  setSyncStatus('syncing');
+  const who = getUserName() || 'Anônimo';
+  const { error } = await sb.from(TABLE).update({
+    parent_id: newParentId,
+    level: newLevel,
+    updated_by: who
+  }).eq('id', srcId);
+  if (error) { setSyncStatus('error'); showToast('Erro ao mover: ' + error.message); }
+  else { setSyncStatus('ok'); showToast('Nó movido e salvo!'); }
+}
+
 // ─── RENDER ───────────────────────────────────────────────────────
 function renderAll() {
   const root = document.getElementById('tree-root');
