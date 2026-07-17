@@ -541,6 +541,45 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* ─── TABS ─────────────────────────────────────────────────── */
+.header-tabs { display:flex; gap:4px; margin-left:24px; align-items:center; }
+.header-tab {
+  padding:6px 16px; border-radius:6px; border:none;
+  background:rgba(255,255,255,.1); color:rgba(255,255,255,.7);
+  font-family:var(--font-sans); font-size:12px; font-weight:500;
+  cursor:pointer; transition:all .15s;
+}
+.header-tab:hover { background:rgba(255,255,255,.18); color:#fff; }
+.header-tab.active { background:#fff; color:var(--accent); font-weight:600; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block !important; }
+
+/* ─── REPAROS KPI ───────────────────────────────────────────── */
+.rep-kpi {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:14px 16px; position:relative; overflow:hidden;
+}
+.rep-kpi::before { content:""; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--acc, #C8102E); }
+.rep-kpi-label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+.rep-kpi-value { font-size:28px; font-weight:700; color:var(--acc, var(--text)); line-height:1; }
+.rep-kpi-sub { font-size:10px; color:var(--text-faint); margin-top:3px; }
+
+/* ─── REPAROS TABLE ─────────────────────────────────────────── */
+#rep-table tr { border-bottom:1px solid var(--border); transition:background .1s; }
+#rep-table tbody tr:hover { background:var(--surface2); }
+#rep-table td { padding:8px 10px; color:var(--text); vertical-align:middle; }
+.rep-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; }
+.rep-prio-crit { color:#ff4444; font-weight:700; }
+.rep-prio-alta { color:#FFC000; font-weight:700; }
+.rep-prio-med  { color:#70AD47; }
+.rep-prio-baixa{ color:#888; }
+.rep-bar-item { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:11px; }
+.rep-bar-label { width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); }
+.rep-bar-track { flex:1; height:6px; background:var(--surface2); border-radius:3px; }
+.rep-bar-fill  { height:6px; border-radius:3px; transition:width .4s; }
+.rep-bar-count { width:24px; text-align:right; font-weight:600; }
+
 </style>
 </head>
 <body>
@@ -553,6 +592,10 @@ body {
       <div class="header-title">Árvore de Ativos</div>
       <div class="header-sub">O-I RIO DE JANEIRO · PLANTA 5010</div>
     </div>
+  </div>
+  <div class="header-tabs">
+    <button class="header-tab active" id="tab-arvore" onclick="switchTab('arvore')">🌳 Árvore de Ativos</button>
+    <button class="header-tab" id="tab-reparos" onclick="switchTab('reparos')">🔧 Controle de Reparos</button>
   </div>
   <div class="header-actions">
     <div class="save-indicator" id="last-edit-indicator" style="display:none;cursor:default;">
@@ -568,6 +611,7 @@ body {
   </div>
 </div>
 
+<div id="panel-arvore" class="tab-panel active">
 <div class="layout">
 
   <!-- SIDEBAR -->
@@ -972,95 +1016,6 @@ function maxDepth(nodes=tree, d=0) {
   let m=d;
   for (let n of nodes) m=Math.max(m,maxDepth(n.children,d+1));
   return m;
-}
-
-// ─── DRAG & DROP ──────────────────────────────────────────────────
-const dragState = { srcId: null, targetId: null, mode: null };
-
-function clearDragHighlights() {
-  document.querySelectorAll('.drag-over-child,.drag-over-before,.drag-over-after,.dragging')
-    .forEach(el => el.classList.remove('drag-over-child','drag-over-before','drag-over-after','dragging'));
-}
-
-function isDescendantOf(ancestorId, nodeId) {
-  const anc = findNode(ancestorId);
-  if (!anc) return false;
-  function check(nodes) {
-    for (let n of nodes) {
-      if (n.id === nodeId) return true;
-      if (check(n.children)) return true;
-    }
-    return false;
-  }
-  return check(anc.children);
-}
-
-function removeFromParent(id) {
-  function rem(nodes) {
-    for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].id === id) return nodes.splice(i, 1)[0];
-      const found = rem(nodes[i].children);
-      if (found) return found;
-    }
-    return null;
-  }
-  return rem(tree);
-}
-
-async function performDrop(srcId, targetId, mode) {
-  if (isDescendantOf(srcId, targetId)) {
-    showToast('Não é possível mover um nó para dentro de si mesmo');
-    return;
-  }
-  const srcNode = removeFromParent(srcId);
-  if (!srcNode) return;
-
-  let newParentId = null;
-  let newLevel = srcNode.level;
-
-  if (mode === 'child') {
-    const target = findNode(targetId);
-    if (!target) {
-      tree.push(srcNode);
-    } else {
-      srcNode.parentId = target.id;
-      newParentId = target.id;
-      newLevel = Math.min(target.level + 1, 8);
-      srcNode.level = newLevel;
-      target.children.push(srcNode);
-      target.expanded = true;
-    }
-  } else {
-    function insertNear(nodes) {
-      for (let i = 0; i < nodes.length; i++) {
-        if (nodes[i].id === targetId) {
-          newParentId = nodes[i].parentId || null;
-          newLevel = nodes[i].level;
-          srcNode.parentId = newParentId;
-          srcNode.level = newLevel;
-          nodes.splice(mode === 'before' ? i : i + 1, 0, srcNode);
-          return true;
-        }
-        if (insertNear(nodes[i].children)) return true;
-      }
-      return false;
-    }
-    if (!insertNear(tree)) tree.push(srcNode);
-  }
-
-  renderAll();
-  selectNode(srcNode.id);
-
-  // Persist move to Supabase
-  setSyncStatus('syncing');
-  const who = getUserName() || 'Anônimo';
-  const { error } = await sb.from(TABLE).update({
-    parent_id: newParentId,
-    level: newLevel,
-    updated_by: who
-  }).eq('id', srcId);
-  if (error) { setSyncStatus('error'); showToast('Erro ao mover: ' + error.message); }
-  else { setSyncStatus('ok'); showToast('Nó movido e salvo!'); }
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────
@@ -1621,10 +1576,11 @@ function closeModal(id) {
   if (modalOpenCount===0 && pendingRemoteRefresh) { pendingRemoteRefresh=false; refreshFromRemote(); }
 }
 
-// Close on backdrop click
-document.querySelectorAll('.modal-overlay').forEach(mo=>{
-  mo.addEventListener('click', e=>{ if(e.target===mo) mo.classList.remove('open'); });
-});
+// Backdrop click — DISABLED to prevent accidental close while typing
+// Use Escape key or Cancel button to close modals
+// document.querySelectorAll('.modal-overlay').forEach(mo=>{
+//   mo.addEventListener('click', e=>{ if(e.target===mo) mo.classList.remove('open'); });
+// });
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e=>{
@@ -1802,6 +1758,8 @@ document.getElementById('user-badge-text').textContent = 'Você: ' + (getUserNam
   renderAll();
   setupRealtime();
   if (!getUserName()) setTimeout(promptUserName, 400);
+  // Seed reparos data if table empty
+  setTimeout(repSeedData, 2000);
 })();
 
 // Tip: press Enter to confirm modals
@@ -1812,6 +1770,362 @@ document.getElementById('user-badge-text').textContent = 'Você: ' + (getUserNam
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO REPAROS
+// ═══════════════════════════════════════════════════════════════
+const REP_TABLE = 'pcm_reparos';
+let repEquipamentos = [];
+let repEditId = null;
+
+const repStatusColor = {
+  'BACKLOG':'#555','EM ANÁLISE':'#2196F3','AGUARDANDO ORÇAMENTO':'#9C27B0',
+  'AGUARDANDO PO':'#FF9800','ENVIADO PARA REPARO':'#FF5722','EM REPARO':'#C8102E',
+  'RETORNADO':'#4CAF50','DISPONÍVEL':'#70AD47','SUCATEADO':'#333'
+};
+const repStatusBg = {
+  'BACKLOG':'#333','EM ANÁLISE':'#1a3a5c','AGUARDANDO ORÇAMENTO':'#3a1a5c',
+  'AGUARDANDO PO':'#5c3a1a','ENVIADO PARA REPARO':'#5c2a1a','EM REPARO':'#5c1a1a',
+  'RETORNADO':'#1a5c2a','DISPONÍVEL':'#2a5c1a','SUCATEADO':'#2a2a2a'
+};
+
+// ─── LOAD FROM SUPABASE ──────────────────────────────────────────
+async function repLoad() {
+  const { data, error } = await sb.from(REP_TABLE)
+    .select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('Reparos load error:', error);
+    return;
+  }
+  repEquipamentos = data || [];
+  repRefresh();
+}
+
+// ─── SAVE TO SUPABASE ────────────────────────────────────────────
+async function repSave() {
+  const who = getUserName() || 'Anônimo';
+  const obj = {
+    descricao:    document.getElementById('rf_desc').value.trim(),
+    fabricante:   document.getElementById('rf_fab').value.trim(),
+    part_number:  document.getElementById('rf_pn').value.trim(),
+    numero_serie: document.getElementById('rf_ns').value.trim(),
+    tag_local:    document.getElementById('rf_tag').value.trim(),
+    data_falha:   document.getElementById('rf_data').value || null,
+    prioridade:   document.getElementById('rf_prio').value,
+    status:       document.getElementById('rf_status').value,
+    fornecedor:   document.getElementById('rf_forn').value.trim(),
+    prazo_retorno:document.getElementById('rf_prazo').value || null,
+    numero_rc:    document.getElementById('rf_rc').value.trim(),
+    numero_po:    document.getElementById('rf_po').value.trim(),
+    valor:        parseFloat(document.getElementById('rf_valor').value) || null,
+    data_retorno: document.getElementById('rf_retorno').value || null,
+    falha_motivo: document.getElementById('rf_falha').value.trim(),
+    updated_by:   who,
+  };
+
+  if (!obj.descricao) { alert('Descrição é obrigatória'); return; }
+
+  let error;
+  if (repEditId !== null) {
+    ({ error } = await sb.from(REP_TABLE).update(obj).eq('id', repEditId));
+  } else {
+    obj.reparos_anteriores = 0;
+    ({ error } = await sb.from(REP_TABLE).insert(obj));
+  }
+
+  if (error) { alert('Erro ao salvar: ' + error.message); return; }
+  closeModal('rep-modal');
+  showToast('✔ Salvo com sucesso!');
+  await repLoad();
+}
+
+async function repDelete(id) {
+  if (!confirm('Excluir este registro?')) return;
+  const { error } = await sb.from(REP_TABLE).delete().eq('id', id);
+  if (error) { alert('Erro ao excluir: ' + error.message); return; }
+  showToast('Registro excluído');
+  await repLoad();
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+function repOpenModal(eq) {
+  repEditId = eq ? eq.id : null;
+  document.getElementById('rep-modalTitle').textContent = eq ? '✏️ Editar Equipamento' : '➕ Novo Equipamento';
+  document.getElementById('rf_desc').value    = eq?.descricao    || '';
+  document.getElementById('rf_fab').value     = eq?.fabricante   || '';
+  document.getElementById('rf_pn').value      = eq?.part_number  || '';
+  document.getElementById('rf_ns').value      = eq?.numero_serie || '';
+  document.getElementById('rf_tag').value     = eq?.tag_local    || '';
+  document.getElementById('rf_data').value    = eq?.data_falha   || '';
+  document.getElementById('rf_prio').value    = eq?.prioridade   || 'BAIXA';
+  document.getElementById('rf_status').value  = eq?.status       || 'BACKLOG';
+  document.getElementById('rf_forn').value    = eq?.fornecedor   || '';
+  document.getElementById('rf_prazo').value   = eq?.prazo_retorno|| '';
+  document.getElementById('rf_rc').value      = eq?.numero_rc    || '';
+  document.getElementById('rf_po').value      = eq?.numero_po    || '';
+  document.getElementById('rf_valor').value   = eq?.valor        || '';
+  document.getElementById('rf_retorno').value = eq?.data_retorno || '';
+  document.getElementById('rf_falha').value   = eq?.falha_motivo || '';
+  document.getElementById('rep-modal').classList.add('open');
+  setTimeout(() => document.getElementById('rf_desc').focus(), 100);
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────
+function repRenderKPIs() {
+  const total  = repEquipamentos.length;
+  const critica = repEquipamentos.filter(e => e.prioridade === 'CRÍTICA').length;
+  const emReparo = repEquipamentos.filter(e => e.status === 'EM REPARO').length;
+  const backlog  = repEquipamentos.filter(e => e.status === 'BACKLOG').length;
+  const disponiveis = repEquipamentos.filter(e => e.status === 'DISPONÍVEL').length;
+  const valor = repEquipamentos.reduce((s, e) => s + (e.valor || 0), 0);
+
+  document.getElementById('rep-kpiGrid').innerHTML = [
+    {label:'Total',      value:total,    sub:'equipamentos',       acc:'#555'},
+    {label:'Críticos',   value:critica,  sub:'prioridade crítica', acc:'#C8102E'},
+    {label:'Em Reparo',  value:emReparo, sub:'em andamento',       acc:'#FF5722'},
+    {label:'Backlog',    value:backlog,  sub:'aguardando ação',    acc:'#FFC000'},
+    {label:'Disponíveis',value:disponiveis,sub:'prontos p/ uso',   acc:'#70AD47'},
+    {label:'Valor Total',value:'R$ '+valor.toLocaleString('pt-BR',{minimumFractionDigits:2}),sub:'investido em reparos',acc:'#2196F3'},
+  ].map(k => `
+    <div class="rep-kpi" style="--acc:${k.acc}">
+      <div class="rep-kpi-label">${k.label}</div>
+      <div class="rep-kpi-value" style="font-size:${typeof k.value==='string'?'16px':'28px'}">${k.value}</div>
+      <div class="rep-kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+function repRenderTable() {
+  const search = (document.getElementById('rep-search')?.value || '').toLowerCase();
+  const fStatus = document.getElementById('rep-filterStatus')?.value || '';
+  const fPrio   = document.getElementById('rep-filterPrio')?.value || '';
+
+  let filtered = repEquipamentos.filter(e => {
+    const matchSearch = !search || [e.descricao,e.numero_serie,e.tag_local,e.fabricante]
+      .some(v => (v||'').toLowerCase().includes(search));
+    const matchStatus = !fStatus || e.status === fStatus;
+    const matchPrio   = !fPrio   || e.prioridade === fPrio;
+    return matchSearch && matchStatus && matchPrio;
+  });
+
+  const prioOrder = {'CRÍTICA':0,'ALTA':1,'MÉDIA':2,'BAIXA':3};
+  filtered.sort((a,b) => (prioOrder[a.prioridade]||3)-(prioOrder[b.prioridade]||3));
+
+  const fmt = d => d ? new Date(d+'T12:00:00').toLocaleDateString('pt-BR') : '—';
+  const prioClass = {'CRÍTICA':'rep-prio-crit','ALTA':'rep-prio-alta','MÉDIA':'rep-prio-med','BAIXA':'rep-prio-baixa'};
+
+  document.getElementById('rep-tbody').innerHTML = filtered.map(e => `
+    <tr>
+      <td style="font-size:10px;color:var(--text-faint);white-space:nowrap">${e.id}</td>
+      <td><strong style="color:var(--text)">${e.descricao||'—'}</strong></td>
+      <td style="color:var(--text-muted)">${e.fabricante||'—'}</td>
+      <td style="font-size:11px;color:var(--text-faint)">${e.part_number||'—'}</td>
+      <td style="font-size:11px">${e.numero_serie||'—'}</td>
+      <td style="font-size:11px">${e.tag_local||'—'}</td>
+      <td style="text-align:center" class="${prioClass[e.prioridade]||''}">${e.prioridade||'—'}</td>
+      <td style="text-align:center">
+        <span class="rep-badge" style="background:${repStatusBg[e.status]||'#333'};color:${repStatusColor[e.status]||'#aaa'}">${e.status||'—'}</span>
+      </td>
+      <td style="font-size:11px;color:var(--text-faint);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.falha_motivo||'—'}</td>
+      <td style="text-align:center;font-size:11px">${fmt(e.data_falha)}</td>
+      <td style="font-size:11px">${e.fornecedor||'—'}</td>
+      <td style="text-align:center;font-size:11px">${fmt(e.prazo_retorno)}</td>
+      <td style="text-align:center;font-size:11px;color:#70AD47;font-weight:${e.numero_rc?'700':'400'}">${e.numero_rc||'—'}</td>
+      <td style="text-align:center;font-size:11px;color:#2196F3;font-weight:${e.numero_po?'700':'400'}">${e.numero_po||'—'}</td>
+      <td style="text-align:center;font-size:11px">${e.valor!=null?'R$ '+e.valor.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
+      <td style="text-align:center;font-size:11px">${fmt(e.data_retorno)}</td>
+      <td style="text-align:center">
+        <span style="font-size:11px;font-weight:700;color:${(e.reparos_anteriores||0)>2?'#ff4444':(e.reparos_anteriores||0)>1?'#FFC000':'#70AD47'}">${e.reparos_anteriores||0}×</span>
+      </td>
+      <td style="text-align:center;white-space:nowrap">
+        <button onclick="repOpenModal(${JSON.stringify(e).replace(/"/g,'&quot;')})"
+          style="background:transparent;border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">✏️</button>
+        <button onclick="repDelete(${e.id})"
+          style="background:transparent;border:1px solid #5c1a1a;color:#ff6666;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function repRenderCharts() {
+  const counts = {};
+  repEquipamentos.forEach(e => { counts[e.status]=(counts[e.status]||0)+1; });
+  const total = repEquipamentos.length || 1;
+  document.getElementById('rep-statusChart').innerHTML = Object.entries(counts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([s,n]) => `
+      <div class="rep-bar-item">
+        <div class="rep-bar-label">${s}</div>
+        <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${(n/total*100).toFixed(0)}%;background:${repStatusColor[s]||'#555'}"></div></div>
+        <div class="rep-bar-count" style="color:${repStatusColor[s]||'#aaa'}">${n}</div>
+      </div>`).join('');
+
+  const rec = repEquipamentos.filter(e => (e.reparos_anteriores||0) > 0)
+    .sort((a,b) => (b.reparos_anteriores||0)-(a.reparos_anteriores||0));
+  document.getElementById('rep-recurrenceList').innerHTML = rec.length === 0
+    ? '<p style="color:var(--text-faint);font-size:12px">Nenhum equipamento com reparo anterior.</p>'
+    : rec.map(e => `
+      <div class="rep-bar-item">
+        <div class="rep-bar-label" title="${e.descricao}">${(e.descricao||'').substring(0,22)}…</div>
+        <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${Math.min((e.reparos_anteriores||0)*33,100)}%;background:${(e.reparos_anteriores||0)>2?'#C8102E':(e.reparos_anteriores||0)>1?'#FFC000':'#70AD47'}"></div></div>
+        <div class="rep-bar-count" style="color:${(e.reparos_anteriores||0)>2?'#ff4444':(e.reparos_anteriores||0)>1?'#FFC000':'#70AD47'}">${e.reparos_anteriores||0}×</div>
+      </div>`).join('');
+}
+
+function repRefresh() { repRenderKPIs(); repRenderTable(); repRenderCharts(); }
+
+// ─── TAB SWITCHING ───────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display='none');
+  document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+tab).style.display='block';
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'reparos' && repEquipamentos.length === 0) repLoad();
+}
+
+// ─── SEED EXISTING DATA FROM dashboard_reparos_v4 ────────────────
+const REP_SEED = [
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ1174",tag_local:"—",prioridade:"CRÍTICA",status:"EM REPARO",falha_motivo:"Sem autonomia / Baterias",data_falha:null,fornecedor:"World Master",prazo_retorno:null,numero_rc:"3000339114",numero_po:"4511828206",valor:589.0,data_retorno:"2026-07-01",reparos_anteriores:0},
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ2272",tag_local:"—",prioridade:"CRÍTICA",status:"EM REPARO",falha_motivo:"Sem autonomia / Baterias",data_falha:null,fornecedor:"World Master",prazo_retorno:null,numero_rc:"3000339114",numero_po:"4511828206",valor:589.0,data_retorno:"2026-07-01",reparos_anteriores:0},
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ1151",tag_local:"—",prioridade:"CRÍTICA",status:"EM REPARO",falha_motivo:"Sem autonomia / Baterias",data_falha:null,fornecedor:"World Master",prazo_retorno:null,numero_rc:"3000339114",numero_po:"4511828206",valor:589.0,data_retorno:"2026-07-01",reparos_anteriores:0},
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ1147",tag_local:"—",prioridade:"CRÍTICA",status:"EM REPARO",falha_motivo:"Sem autonomia / Baterias",data_falha:null,fornecedor:"World Master",prazo_retorno:null,numero_rc:"3000339114",numero_po:"4511828206",valor:589.0,data_retorno:"2026-07-01",reparos_anteriores:0},
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ1132",tag_local:"—",prioridade:"CRÍTICA",status:"EM REPARO",falha_motivo:"Sem autonomia / Baterias",data_falha:null,fornecedor:"World Master",prazo_retorno:null,numero_rc:"3000339114",numero_po:"4511828206",valor:589.0,data_retorno:"2026-07-01",reparos_anteriores:0},
+  {descricao:"Nobreak APC BX1500BI-BR",fabricante:"APC",part_number:"BX1500BI-BR",numero_serie:"5B2316WJ1108",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Nobreak APC BX2200BI-BR",fabricante:"APC",part_number:"BX2200BI-BR",numero_serie:"5B2319WL0261",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Nobreak APC BX2200BI-BR",fabricante:"APC",part_number:"BX2200BI-BR",numero_serie:"5B2319WL0437",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Double Motor Module MM2",fabricante:"Siemens",part_number:"6SL3120-2TE13-0AA3",numero_serie:"T-BO2049042",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"Overload e Aterramento",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Double Motor Module MM2",fabricante:"Siemens",part_number:"6SL3120-2TE13-0AA3",numero_serie:"T-BO2049047",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"Erro overload / Saturação",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Double Motor Module MM2",fabricante:"Siemens",part_number:"6SL3120-2TE13-0AA3",numero_serie:"T-BO2049051",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Single Motor Module",fabricante:"Siemens",part_number:"6SL3120-1TE21-8AA3",numero_serie:"T-BO2016584",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Single Motor Module",fabricante:"Siemens",part_number:"6SL3120-1TE13-0AA3",numero_serie:"T-C16163553",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Single Motor Module",fabricante:"Siemens",part_number:"6SL3120-1TE21-8AA4",numero_serie:"T-H96267153",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"Smart Line Module",fabricante:"Siemens",part_number:"6SL3130-6AE15-0AB0",numero_serie:"T-B52027916",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"SIMOTION D425",fabricante:"Siemens",part_number:"6AU1425-0AA00-0AA0",numero_serie:"T-BN2039960",tag_local:"—",prioridade:"CRÍTICA",status:"BACKLOG",falha_motivo:"Erro execução (apaga o módulo de controle)",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+  {descricao:"SIMOTION D425",fabricante:"Siemens",part_number:"6AU1425-0AA00-0AA0",numero_serie:"T-C12066099",tag_local:"—",prioridade:"ALTA",status:"BACKLOG",falha_motivo:"A identificar",data_falha:null,fornecedor:"—",prazo_retorno:null,numero_rc:"",numero_po:"",valor:null,data_retorno:null,reparos_anteriores:0},
+];
+
+async function repSeedData() {
+  const { data: existing } = await sb.from(REP_TABLE).select('id').limit(1);
+  if (existing && existing.length > 0) return; // already has data
+  const who = getUserName() || 'Sistema';
+  for (const item of REP_SEED) {
+    await sb.from(REP_TABLE).insert({...item, updated_by: who});
+  }
+  showToast('Dados iniciais de reparos carregados!');
+}
+
 </script>
+
+</div><!-- end .layout -->
+</div><!-- end panel-arvore -->
+
+<!-- ═══ PAINEL REPAROS ═══ -->
+<div id="panel-reparos" class="tab-panel" style="display:none">
+<div style="padding:20px 24px">
+
+  <div class="kpi-grid" id="rep-kpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-left:4px solid #C8102E;padding-left:10px">Backlog de Equipamentos em Reparo</div>
+    <button onclick="repOpenModal(null)" style="background:#C8102E;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">＋ Novo Equipamento</button>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <input type="text" id="rep-search" placeholder="🔍 Buscar descrição, nº série, tag..."
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;outline:none;min-width:260px"
+      oninput="repRenderTable()">
+    <select id="rep-filterStatus" onchange="repRenderTable()"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+      <option value="">Todos os status</option>
+      <option>BACKLOG</option><option>EM ANÁLISE</option><option>AGUARDANDO ORÇAMENTO</option>
+      <option>AGUARDANDO PO</option><option>ENVIADO PARA REPARO</option><option>EM REPARO</option>
+      <option>RETORNADO</option><option>DISPONÍVEL</option><option>SUCATEADO</option>
+    </select>
+    <select id="rep-filterPrio" onchange="repRenderTable()"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+      <option value="">Todas as prioridades</option>
+      <option>CRÍTICA</option><option>ALTA</option><option>MÉDIA</option><option>BAIXA</option>
+    </select>
+  </div>
+
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:24px">
+    <table id="rep-table" style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);white-space:nowrap">ID</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Descrição</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Fabricante</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Part Number</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Nº Série</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">TAG / Local</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Prioridade</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Status</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Falha</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Data Falha</th>
+          <th style="padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Fornecedor</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Prazo</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">RC</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">PO</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Valor</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Retorno</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Reparos</th>
+          <th style="padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted)">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="rep-tbody"></tbody>
+    </table>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-left:4px solid #C8102E;padding-left:10px;margin-bottom:14px">Distribuição por Status</div>
+      <div id="rep-statusChart"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-left:4px solid #C8102E;padding-left:10px;margin-bottom:14px">Múltiplos Reparos</div>
+      <div id="rep-recurrenceList"></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end panel-reparos -->
+
+<!-- MODAL REPAROS -->
+<div class="modal-overlay" id="rep-modal" onclick="event.stopPropagation()">
+  <div class="modal" style="width:680px;max-width:95vw" onclick="event.stopPropagation()">
+    <h3 id="rep-modalTitle">➕ Novo Equipamento</h3>
+    <div class="modal-sub" style="margin-bottom:16px;font-size:11px;color:var(--text-muted)">Controle de Reparos — Planta 5010</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Descrição</label><input id="rf_desc" placeholder="Ex: Nobreak APC 1500VA"></div>
+      <div class="field"><label>Fabricante</label><input id="rf_fab"></div>
+      <div class="field"><label>Part Number</label><input id="rf_pn"></div>
+      <div class="field"><label>Nº Série</label><input id="rf_ns"></div>
+      <div class="field"><label>TAG / Local</label><input id="rf_tag" placeholder="Ex: 5010-PROD-FRN-FR9-L91"></div>
+      <div class="field"><label>Data da Falha</label><input type="date" id="rf_data"></div>
+      <div class="field"><label>Prioridade</label>
+        <select id="rf_prio"><option>CRÍTICA</option><option>ALTA</option><option>MÉDIA</option><option selected>BAIXA</option></select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="rf_status">
+          <option selected>BACKLOG</option><option>EM ANÁLISE</option><option>AGUARDANDO ORÇAMENTO</option>
+          <option>AGUARDANDO PO</option><option>ENVIADO PARA REPARO</option><option>EM REPARO</option>
+          <option>RETORNADO</option><option>DISPONÍVEL</option><option>SUCATEADO</option>
+        </select>
+      </div>
+      <div class="field"><label>Fornecedor</label><input id="rf_forn"></div>
+      <div class="field"><label>Prazo de Retorno</label><input type="date" id="rf_prazo"></div>
+      <div class="field"><label>Nº RC</label><input id="rf_rc"></div>
+      <div class="field"><label>Nº PO</label><input id="rf_po"></div>
+      <div class="field"><label>Valor (R$)</label><input id="rf_valor" type="number" step="0.01"></div>
+      <div class="field"><label>Data de Retorno</label><input type="date" id="rf_retorno"></div>
+      <div class="field" style="grid-column:1/-1"><label>Falha / Motivo</label>
+        <textarea id="rf_falha" rows="2" style="resize:vertical;width:100%;padding:7px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:none"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('rep-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="repSave()" style="background:#C8102E;border-color:#C8102E">Salvar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
